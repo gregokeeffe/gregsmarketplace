@@ -92,23 +92,27 @@
 }
 .pm-del-btn:hover { background: #dc2626; }
 
-.pm-move-row {
-  display: flex;
-  justify-content: space-between;
-}
-.pm-move-btn {
-  background: rgba(0,0,0,0.6);
-  color: #fff;
-  border: none;
+.pm-drag-hint {
+  font-size: 0.65rem;
+  color: rgba(255,255,255,0.85);
+  background: rgba(0,0,0,0.55);
   border-radius: 3px;
-  padding: 2px 7px;
-  font-size: 11px;
-  cursor: pointer;
-  line-height: 1.6;
-  transition: background 0.15s;
+  padding: 2px 5px;
+  text-align: center;
+  letter-spacing: 0.02em;
+  align-self: center;
+  margin: 0 auto;
 }
-.pm-move-btn:hover { background: rgba(0,0,0,0.85); }
-.pm-move-btn:disabled { opacity: 0.3; cursor: default; }
+
+.pm-thumb[draggable="true"] { cursor: grab; }
+.pm-thumb[draggable="true"]:active { cursor: grabbing; }
+.pm-thumb.dragging { opacity: 0.4; border-style: dashed; }
+.pm-thumb.drag-over {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-light);
+  transform: scale(1.05);
+  transition: transform 0.1s, box-shadow 0.1s;
+}
 
 /* --- Photo Editor Modal ----------------------------------- */
 .modal-editor { max-width: 920px; }

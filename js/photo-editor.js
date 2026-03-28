@@ -331,15 +331,12 @@
     }
 
     grid.innerHTML = photos.map((url, i) => `
-      <div class="pm-thumb" data-index="${i}">
+      <div class="pm-thumb" data-index="${i}" draggable="true">
         <img src="${escAttr(url)}" alt="Photo ${i + 1}" onerror="this.src='/images/placeholder.svg'">
         <div class="pm-thumb-num">${i + 1}</div>
         <div class="pm-thumb-actions">
           <button class="pm-del-btn" data-index="${i}" title="Delete photo">×</button>
-          <div class="pm-move-row">
-            <button class="pm-move-btn pm-move-left" data-index="${i}" ${i === 0 ? 'disabled' : ''} title="Move left">←</button>
-            <button class="pm-move-btn pm-move-right" data-index="${i}" ${i === photos.length - 1 ? 'disabled' : ''} title="Move right">→</button>
-          </div>
+          <div class="pm-drag-hint">⠿ drag to reorder</div>
         </div>
       </div>`).join('');
 
@@ -355,24 +352,94 @@
       });
     });
 
-    // Reorder
-    grid.querySelectorAll('.pm-move-left').forEach(btn => {
-      btn.addEventListener('click', async e => {
-        e.stopPropagation();
-        const i = parseInt(btn.dataset.index);
-        [currentItem.photos[i - 1], currentItem.photos[i]] = [currentItem.photos[i], currentItem.photos[i - 1]];
+    // Drag-and-drop reorder
+    let dragSrc = null;
+
+    grid.querySelectorAll('.pm-thumb').forEach(thumb => {
+      thumb.addEventListener('dragstart', e => {
+        dragSrc = thumb;
+        thumb.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+      });
+
+      thumb.addEventListener('dragend', () => {
+        thumb.classList.remove('dragging');
+        grid.querySelectorAll('.pm-thumb').forEach(t => t.classList.remove('drag-over'));
+      });
+
+      thumb.addEventListener('dragover', e => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        if (thumb !== dragSrc) {
+          grid.querySelectorAll('.pm-thumb').forEach(t => t.classList.remove('drag-over'));
+          thumb.classList.add('drag-over');
+        }
+      });
+
+      thumb.addEventListener('dragleave', () => {
+        thumb.classList.remove('drag-over');
+      });
+
+      thumb.addEventListener('drop', async e => {
+        e.preventDefault();
+        if (!dragSrc || dragSrc === thumb) return;
+        const from = parseInt(dragSrc.dataset.index);
+        const to   = parseInt(thumb.dataset.index);
+        // Reorder array
+        const moved = currentItem.photos.splice(from, 1)[0];
+        currentItem.photos.splice(to, 0, moved);
         await savePhotos('Photo order saved');
         renderPhotoGrid();
       });
     });
-    grid.querySelectorAll('.pm-move-right').forEach(btn => {
-      btn.addEventListener('click', async e => {
-        e.stopPropagation();
-        const i = parseInt(btn.dataset.index);
-        [currentItem.photos[i], currentItem.photos[i + 1]] = [currentItem.photos[i + 1], currentItem.photos[i]];
-        await savePhotos('Photo order saved');
-        renderPhotoGrid();
-      });
+
+    // Touch drag (mobile)
+    let touchDragSrc = null;
+    let touchClone = null;
+
+    grid.querySelectorAll('.pm-thumb').forEach(thumb => {
+      thumb.addEventListener('touchstart', e => {
+        touchDragSrc = thumb;
+        thumb.classList.add('dragging');
+      }, { passive: true });
+
+      thumb.addEventListener('touchmove', e => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        // Move a visual clone
+        if (!touchClone) {
+          touchClone = thumb.cloneNode(true);
+          touchClone.style.cssText = `position:fixed;pointer-events:none;opacity:0.8;z-index:9999;width:${thumb.offsetWidth}px;height:${thumb.offsetHeight}px;`;
+          document.body.appendChild(touchClone);
+        }
+        touchClone.style.left = (touch.clientX - thumb.offsetWidth / 2) + 'px';
+        touchClone.style.top  = (touch.clientY - thumb.offsetHeight / 2) + 'px';
+
+        // Highlight target
+        const el = document.elementFromPoint(touch.clientX, touch.clientY);
+        const target = el && el.closest('.pm-thumb');
+        grid.querySelectorAll('.pm-thumb').forEach(t => t.classList.remove('drag-over'));
+        if (target && target !== touchDragSrc) target.classList.add('drag-over');
+      }, { passive: false });
+
+      thumb.addEventListener('touchend', async e => {
+        if (touchClone) { touchClone.remove(); touchClone = null; }
+        thumb.classList.remove('dragging');
+        grid.querySelectorAll('.pm-thumb').forEach(t => t.classList.remove('drag-over'));
+
+        const touch = e.changedTouches[0];
+        const el = document.elementFromPoint(touch.clientX, touch.clientY);
+        const target = el && el.closest('.pm-thumb');
+        if (target && target !== touchDragSrc) {
+          const from = parseInt(touchDragSrc.dataset.index);
+          const to   = parseInt(target.dataset.index);
+          const moved = currentItem.photos.splice(from, 1)[0];
+          currentItem.photos.splice(to, 0, moved);
+          await savePhotos('Photo order saved');
+          renderPhotoGrid();
+        }
+        touchDragSrc = null;
+      }, { passive: true });
     });
   }
 
