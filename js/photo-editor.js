@@ -62,6 +62,16 @@
 
     loadFile(file) {
       return new Promise((resolve, reject) => {
+        // Reject unsupported formats early with a clear message
+        const name = (file.name || '').toLowerCase();
+        const type = (file.type || '').toLowerCase();
+        const isHeic = name.endsWith('.heic') || name.endsWith('.heif') ||
+                       type.includes('heic') || type.includes('heif');
+        if (isHeic) {
+          reject(new Error(`"${file.name}" is HEIC format — Chrome can't open it. Convert to JPG first (see tip below).`));
+          return;
+        }
+
         const reader = new FileReader();
         reader.onload = e => {
           const img = new Image();
@@ -72,10 +82,10 @@
             this._fitCover();
             resolve();
           };
-          img.onerror = reject;
+          img.onerror = () => reject(new Error(`"${file.name}" could not be decoded. Try converting it to JPG first.`));
           img.src = e.target.result;
         };
-        reader.onerror = reject;
+        reader.onerror = () => reject(new Error(`Could not read "${file.name}".`));
         reader.readAsDataURL(file);
       });
     }
@@ -479,7 +489,29 @@
     openModal('photo-editor-modal');
 
     if (fileQueue.length) {
-      editor.loadFile(fileQueue[0]).then(syncControls);
+      editor.loadFile(fileQueue[0]).then(syncControls).catch(err => {
+        window._adminAPI && window._adminAPI.showToast(err.message, 'error');
+        advanceQueue();
+      });
+    }
+  }
+
+  function advanceQueue() {
+    if (queueIndex < fileQueue.length) {
+      const canvas = document.getElementById('editor-canvas');
+      canvas.classList.remove('has-image');
+      editor = new PhotoEditor(canvas);
+      resetControls();
+      updateQueueUI();
+      editor.loadFile(fileQueue[queueIndex]).then(syncControls).catch(err => {
+        window._adminAPI && window._adminAPI.showToast(err.message, 'error');
+        queueIndex++;
+        advanceQueue();
+      });
+    } else {
+      fileQueue = [];
+      queueIndex = 0;
+      closeModal('photo-editor-modal');
     }
   }
 
@@ -568,22 +600,7 @@
 
       // Advance queue or close
       queueIndex++;
-      if (fileQueue.length > 1 && queueIndex < fileQueue.length) {
-        // Reset editor for next photo
-        const canvas = document.getElementById('editor-canvas');
-        canvas.classList.remove('has-image');
-        editor = new PhotoEditor(canvas);
-        resetControls();
-        updateQueueUI();
-        editor.loadFile(fileQueue[queueIndex]).then(syncControls);
-      } else {
-        fileQueue = [];
-        queueIndex = 0;
-        closeModal('photo-editor-modal');
-        if (fileQueue.length === 0 && photoNum > 1) {
-          api.showToast('All photos uploaded!', 'success');
-        }
-      }
+      advanceQueue();
 
     } catch (ex) {
       window._adminAPI && window._adminAPI.showToast(ex.message, 'error');
@@ -676,18 +693,7 @@
     if (skipBtn) {
       skipBtn.addEventListener('click', () => {
         queueIndex++;
-        if (queueIndex < fileQueue.length) {
-          const canvas = document.getElementById('editor-canvas');
-          canvas.classList.remove('has-image');
-          editor = new PhotoEditor(canvas);
-          resetControls();
-          updateQueueUI();
-          editor.loadFile(fileQueue[queueIndex]).then(syncControls);
-        } else {
-          fileQueue = [];
-          queueIndex = 0;
-          closeModal('photo-editor-modal');
-        }
+        advanceQueue();
       });
     }
 
