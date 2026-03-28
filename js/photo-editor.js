@@ -621,37 +621,40 @@
   }
 
   /* ================================================================
+     pickFiles — creates a fresh input element each time,
+     guaranteed to fire 'change' in all browsers
+     ================================================================ */
+  function pickFiles(multiple, callback) {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    if (multiple) input.multiple = true;
+    input.style.cssText = 'position:fixed;top:-200px;left:-200px;opacity:0;';
+    document.body.appendChild(input);
+    input.addEventListener('change', () => {
+      const files = Array.from(input.files || []);
+      document.body.removeChild(input);
+      if (files.length) callback(files);
+    });
+    // Clean up if user cancels without selecting
+    input.addEventListener('cancel', () => {
+      document.body.removeChild(input);
+    });
+    input.click();
+  }
+
+  /* ================================================================
      Init – bind all events
      ================================================================ */
   document.addEventListener('DOMContentLoaded', () => {
 
-    /* --- pm-file-input: "Add Photo" button in Photo Manager ---
-         Opens the editor fresh with a new queue of files          */
-    const pmFileInput = document.getElementById('pm-file-input');
-    if (pmFileInput) {
-      pmFileInput.addEventListener('change', e => {
-        const files = e.target.files;
-        pmFileInput.value = '';
-        if (!files || !files.length) return;
-        openPhotoEditor(files);
-      });
-    }
-
-    /* --- editor-file-input: "Browse" button inside the editor -
-         Replaces current image (or starts queue) without
-         reopening the modal                                        */
-    const editorFileInput = document.getElementById('editor-file-input');
-    if (editorFileInput) {
-      editorFileInput.addEventListener('change', e => {
-        const files = e.target.files;
-        editorFileInput.value = '';
-        if (!files || !files.length) return;
+    /* --- Browse button inside editor ----------------------- */
+    document.getElementById('editor-browse-btn').addEventListener('click', () => {
+      pickFiles(true, files => {
         if (files.length === 1) {
-          // Just swap the image in the already-open editor
           if (editor) editor.loadFile(files[0]).then(syncControls);
         } else {
-          // New multi-file queue, restart editor
-          fileQueue = Array.from(files);
+          fileQueue = files;
           queueIndex = 0;
           const canvas = document.getElementById('editor-canvas');
           canvas.classList.remove('has-image');
@@ -661,16 +664,11 @@
           editor.loadFile(fileQueue[0]).then(syncControls);
         }
       });
-    }
-
-    /* --- Browse button inside editor ----------------------- */
-    document.getElementById('editor-browse-btn').addEventListener('click', () => {
-      document.getElementById('editor-file-input').click();
     });
 
     /* --- Add Photo button in Photo Manager ----------------- */
     document.getElementById('pm-add-photo-btn').addEventListener('click', () => {
-      document.getElementById('pm-file-input').click();
+      pickFiles(true, files => openPhotoEditor(files));
     });
 
     /* --- Skip button --------------------------------------- */
