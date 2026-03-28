@@ -75,21 +75,60 @@
     photos = (item.photos && item.photos.length) ? item.photos : ['/images/placeholder.svg'];
     renderGallery(photos, item.sold);
 
-    // Cross-listing badges
+    // Cross-listing panel
     const badgesEl = document.getElementById('cross-badges');
     if (badgesEl) {
-      const badges = [];
-      if (item.crossListings && item.crossListings.ebay) {
-        badges.push(`<a href="${escAttr(item.crossListings.ebay)}" target="_blank" rel="noopener noreferrer" class="cross-badge cross-badge-ebay">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 8.5l3.5 7 3.5-7 3.5 7 3.5-7"/><circle cx="18" cy="12" r="3"/></svg>
-          Also on eBay</a>`);
+      const hasCross = item.crossListings &&
+        (item.crossListings.ebay || item.crossListings.facebook);
+
+      if (hasCross) {
+        const ebayPrice = item.crossListings.ebayPrice
+          ? item.crossListings.ebayPrice
+          : Math.round(item.price / 0.90);
+        const fbPrice = item.crossListings.facebookPrice
+          ? item.crossListings.facebookPrice
+          : Math.round(item.price / 0.80);
+        const rows = [];
+
+        if (item.crossListings.ebay) {
+          rows.push(`
+            <a href="${escAttr(item.crossListings.ebay)}" target="_blank" rel="noopener noreferrer" class="cross-platform-row cross-row-ebay">
+              <div class="cross-platform-logo">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M2 9.5C2 7 3.5 5 6.5 5c2.5 0 4 1.3 4.3 3.3H9c-.2-1.3-1.1-2.1-2.5-2.1C4.5 6.2 3.3 7.6 3.3 9.5s1.2 3.3 3.2 3.3c1.4 0 2.3-.8 2.6-2.1h1.8C10.5 12.7 9 14 6.5 14 3.5 14 2 12 2 9.5zm10.8 3.7 2.5-4.6 2.5 4.6h-5zm-.8-7h1.8l4 7.3-1.2 2.2-1-1.8H11l-1 1.8-1.2-2.2 4-7.3z"/></svg>
+              </div>
+              <div class="cross-platform-info">
+                <span class="cross-platform-name">Also on eBay</span>
+                <span class="cross-platform-note">Buyer protection &amp; returns</span>
+              </div>
+              <div class="cross-platform-price">$${formatPrice(ebayPrice)}</div>
+            </a>`);
+        }
+
+        if (item.crossListings.facebook) {
+          rows.push(`
+            <a href="${escAttr(item.crossListings.facebook)}" target="_blank" rel="noopener noreferrer" class="cross-platform-row cross-row-facebook">
+              <div class="cross-platform-logo">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+              </div>
+              <div class="cross-platform-info">
+                <span class="cross-platform-name">Also on Facebook Marketplace</span>
+                <span class="cross-platform-note">Local pickup preferred</span>
+              </div>
+              <div class="cross-platform-price">$${formatPrice(fbPrice)}</div>
+            </a>`);
+        }
+
+        badgesEl.innerHTML = `
+          <div class="cross-platform-panel">
+            <div class="cross-platform-header">
+              <span class="cross-platform-title">Also listed on</span>
+              <span class="cross-platform-best">Best price here ✓</span>
+            </div>
+            ${rows.join('')}
+          </div>`;
+      } else {
+        badgesEl.innerHTML = '';
       }
-      if (item.crossListings && item.crossListings.facebook) {
-        badges.push(`<a href="${escAttr(item.crossListings.facebook)}" target="_blank" rel="noopener noreferrer" class="cross-badge cross-badge-facebook">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
-          Also on Facebook</a>`);
-      }
-      badgesEl.innerHTML = badges.join('');
     }
 
     // Title / price / condition

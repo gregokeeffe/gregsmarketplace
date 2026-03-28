@@ -284,7 +284,12 @@
           </span>
         </td>
         <td data-label="Cross-listings">
-          <div style="display:flex;gap:0.3rem;flex-wrap:wrap">${ebayLink}${fbLink}</div>
+          <div class="cross-links-cell" id="cross-cell-${escAttr(item.id)}">
+            <div class="cross-links-display">
+              ${ebayLink}${fbLink}
+              <button class="btn btn-xs btn-secondary edit-cross-btn" data-id="${escAttr(item.id)}" title="Edit cross-listing URLs">✏️</button>
+            </div>
+          </div>
         </td>
         <td data-label="Actions">
           <div class="actions-cell">
@@ -386,6 +391,72 @@
         input.addEventListener('keydown', e => {
           if (e.key === 'Enter') saveBtn.click();
           if (e.key === 'Escape') cancelBtn.click();
+        });
+      });
+    });
+
+    // Edit cross-listing URLs
+    document.querySelectorAll('.edit-cross-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.id;
+        const item = inventory.items.find(i => i.id === id);
+        if (!item) return;
+        const cell = document.getElementById('cross-cell-' + id);
+        if (!cell) return;
+
+        const cl = item.crossListings || {};
+
+        cell.innerHTML = `
+          <div class="cross-links-edit" style="display:flex;flex-direction:column;gap:0.5rem;min-width:260px">
+            <div style="font-size:0.72rem;font-weight:700;color:var(--text-muted);padding-bottom:0.2rem;border-bottom:1px solid var(--border)">
+              eBay
+            </div>
+            <div style="display:flex;gap:0.4rem">
+              <input type="url" class="admin-search-input" id="ebay-url-${escAttr(id)}"
+                placeholder="eBay listing URL" value="${escAttr(cl.ebay || '')}"
+                style="font-size:0.75rem;padding:0.3rem 0.5rem;flex:1">
+              <input type="number" class="admin-search-input" id="ebay-price-${escAttr(id)}"
+                placeholder="Price $" value="${escAttr(cl.ebayPrice ? cl.ebayPrice : '')}" min="0" step="0.01"
+                style="font-size:0.75rem;padding:0.3rem 0.5rem;width:80px">
+            </div>
+            <div style="font-size:0.72rem;font-weight:700;color:var(--text-muted);padding-bottom:0.2rem;border-bottom:1px solid var(--border)">
+              Facebook Marketplace
+            </div>
+            <div style="display:flex;gap:0.4rem">
+              <input type="url" class="admin-search-input" id="fb-url-${escAttr(id)}"
+                placeholder="Facebook Marketplace URL" value="${escAttr(cl.facebook || '')}"
+                style="font-size:0.75rem;padding:0.3rem 0.5rem;flex:1">
+              <input type="number" class="admin-search-input" id="fb-price-${escAttr(id)}"
+                placeholder="Price $" value="${escAttr(cl.facebookPrice ? cl.facebookPrice : '')}" min="0" step="0.01"
+                style="font-size:0.75rem;padding:0.3rem 0.5rem;width:80px">
+            </div>
+            <div style="display:flex;gap:0.4rem">
+              <button class="btn btn-xs btn-primary save-cross-btn" data-id="${escAttr(id)}">Save</button>
+              <button class="btn btn-xs btn-secondary cancel-cross-btn" data-id="${escAttr(id)}">Cancel</button>
+            </div>
+          </div>`;
+
+        cell.querySelector('.save-cross-btn').addEventListener('click', async () => {
+          const ebay       = document.getElementById('ebay-url-'   + id).value.trim();
+          const ebayPrice  = parseFloat(document.getElementById('ebay-price-' + id).value) || null;
+          const fb         = document.getElementById('fb-url-'     + id).value.trim();
+          const fbPrice    = parseFloat(document.getElementById('fb-price-'   + id).value) || null;
+          if (!item.crossListings) item.crossListings = {};
+          item.crossListings.ebay           = ebay;
+          item.crossListings.ebayPrice      = ebayPrice;
+          item.crossListings.facebook       = fb;
+          item.crossListings.facebookPrice  = fbPrice;
+          try {
+            await saveInventory(inventory);
+            renderItems();
+            showToast('Cross-listing links saved', 'success');
+          } catch (ex) {
+            showToast(ex.message, 'error');
+          }
+        });
+
+        cell.querySelector('.cancel-cross-btn').addEventListener('click', () => {
+          renderItems();
         });
       });
     });
