@@ -11,6 +11,13 @@
   let fileQueue = [];
   let queueIndex = 0;
 
+  // Persisted settings carried forward through the queue
+  let savedSettings = {
+    brightness: 100, contrast: 100, saturation: 100,
+    fineRot: 0, filterPreset: 'none'
+    // zoom and pan intentionally NOT persisted — each photo fits to its own frame
+  };
+
   /* ================================================================
      PhotoEditor Class
      ================================================================ */
@@ -313,15 +320,26 @@
     });
   }
 
-  function resetControls() {
+  function resetControls(clearAll) {
+    // clearAll=true resets to factory defaults AND clears savedSettings
+    // clearAll=false (default) syncs UI to current savedSettings
+    if (clearAll) {
+      savedSettings = { brightness:100, contrast:100, saturation:100, fineRot:0, filterPreset:'none' };
+      if (editor) {
+        editor.brightness = 100; editor.contrast = 100; editor.saturation = 100;
+        editor.fineRot = 0; editor.filterPreset = 'none';
+        editor.render();
+      }
+    }
+    const s = clearAll ? { brightness:100, contrast:100, saturation:100, fineRot:0 } : savedSettings;
     const el = id => document.getElementById(id);
-    el('ctrl-brightness').value = 100; el('val-brightness').textContent = '100%';
-    el('ctrl-contrast').value   = 100; el('val-contrast').textContent   = '100%';
-    el('ctrl-saturation').value = 100; el('val-saturation').textContent = '100%';
-    el('ctrl-fine-rot').value   = 0;   el('val-fine-rot').textContent   = '+0°';
-    el('ctrl-zoom').value       = 100; el('val-zoom').textContent       = '100%';
+    el('ctrl-brightness').value = s.brightness; el('val-brightness').textContent = s.brightness + '%';
+    el('ctrl-contrast').value   = s.contrast;   el('val-contrast').textContent   = s.contrast + '%';
+    el('ctrl-saturation').value = s.saturation; el('val-saturation').textContent = s.saturation + '%';
+    el('ctrl-fine-rot').value   = s.fineRot;    el('val-fine-rot').textContent   = (s.fineRot >= 0 ? '+' : '') + s.fineRot + '°';
+    el('ctrl-zoom').value       = 100;          el('val-zoom').textContent       = '100%';
     document.querySelectorAll('.filter-preset-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.filter === 'none');
+      btn.classList.toggle('active', btn.dataset.filter === (clearAll ? 'none' : savedSettings.filterPreset));
     });
   }
 
@@ -506,14 +524,37 @@
     }
   }
 
+  function captureSettings() {
+    if (!editor) return;
+    savedSettings = {
+      brightness:   editor.brightness,
+      contrast:     editor.contrast,
+      saturation:   editor.saturation,
+      fineRot:      editor.fineRot,
+      filterPreset: editor.filterPreset,
+    };
+  }
+
+  function applySettings() {
+    if (!editor) return;
+    editor.brightness   = savedSettings.brightness;
+    editor.contrast     = savedSettings.contrast;
+    editor.saturation   = savedSettings.saturation;
+    editor.fineRot      = savedSettings.fineRot;
+    editor.filterPreset = savedSettings.filterPreset;
+    editor.render();
+  }
+
   function advanceQueue() {
     if (queueIndex < fileQueue.length) {
       const canvas = document.getElementById('editor-canvas');
       canvas.classList.remove('has-image');
       editor = new PhotoEditor(canvas);
-      resetControls();
+      applySettings();   // restore previous photo's adjustments
       updateQueueUI();
-      editor.loadFile(fileQueue[queueIndex]).then(syncControls).catch(err => {
+      editor.loadFile(fileQueue[queueIndex]).then(() => {
+        syncControls();
+      }).catch(err => {
         window._adminAPI && window._adminAPI.showToast(err.message, 'error');
         queueIndex++;
         advanceQueue();
@@ -608,7 +649,8 @@
       renderPhotoGrid();
       api.showToast(`Photo ${photoNum} uploaded!`, 'success');
 
-      // Advance queue or close
+      // Carry settings forward to next photo
+      captureSettings();
       queueIndex++;
       advanceQueue();
 
@@ -702,6 +744,7 @@
     const skipBtn = document.getElementById('editor-skip-btn');
     if (skipBtn) {
       skipBtn.addEventListener('click', () => {
+        captureSettings();
         queueIndex++;
         advanceQueue();
       });
@@ -723,7 +766,7 @@
     document.getElementById('btn-reset-editor').addEventListener('click', () => {
       if (!editor) return;
       editor.reset();
-      syncControls();
+      resetControls(true);  // clear all including savedSettings
     });
 
     /* --- Sliders ------------------------------------------- */
