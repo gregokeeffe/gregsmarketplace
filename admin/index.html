@@ -6,6 +6,7 @@
   <title>Admin – Greg's Marketplace</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚙️</text></svg>">
   <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="/css/photo-editor.css">
   <meta name="robots" content="noindex, nofollow">
 </head>
 <body>
@@ -400,9 +401,159 @@
     </div>
   </div>
 
+  <!-- ===== PHOTO MANAGER MODAL ============================ -->
+  <div id="photo-manager-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="pm-modal-title" style="display:none">
+    <div class="modal modal-wide">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title" id="pm-modal-title">📸 Photos</h3>
+          <div class="pm-header-sub" id="pm-item-title"></div>
+        </div>
+        <button class="modal-close" id="pm-close-btn" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="pm-grid" class="pm-photo-grid">
+          <div class="pm-empty"><strong>No photos yet</strong><p>Click "Add Photo" to upload and edit your first image.</p></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="pm-add-photo-btn" class="btn btn-primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Photo
+        </button>
+        <button id="pm-done-btn" class="btn btn-secondary">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PHOTO EDITOR MODAL ============================= -->
+  <div id="photo-editor-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="pe-modal-title" style="display:none">
+    <div class="modal modal-editor">
+      <div class="modal-header">
+        <h3 class="modal-title" id="pe-modal-title">✏️ Edit &amp; Upload Photo</h3>
+        <button class="modal-close" id="pe-close-btn" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="editor-layout">
+
+          <!-- Canvas -->
+          <div class="editor-canvas-wrap">
+            <canvas id="editor-canvas" width="480" height="360" aria-label="Photo editor canvas" role="img"></canvas>
+            <div class="editor-drop-hint">
+              <strong>Drag to pan</strong> · Scroll/pinch to zoom · Drop image to load
+            </div>
+            <div class="editor-file-row" style="margin-top:0.5rem">
+              <input type="file" id="photo-file-input" accept="image/*" style="display:none" aria-label="Select photo file">
+              <button id="editor-browse-btn" class="btn btn-secondary">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+                Browse / Select Photo
+              </button>
+            </div>
+          </div>
+
+          <!-- Controls -->
+          <div class="editor-controls">
+
+            <!-- Rotate -->
+            <div class="ctrl-group">
+              <div class="ctrl-label">Rotate</div>
+              <div class="rotate-btns">
+                <button id="btn-rot-ccw" class="btn btn-secondary btn-sm">↺ 90° CCW</button>
+                <button id="btn-rot-cw"  class="btn btn-secondary btn-sm">↻ 90° CW</button>
+              </div>
+            </div>
+
+            <hr class="ctrl-sep">
+
+            <!-- Fine rotation -->
+            <div class="ctrl-group">
+              <div class="ctrl-row">
+                <label class="ctrl-label" for="ctrl-fine-rot">Fine Rotation</label>
+                <span class="ctrl-val" id="val-fine-rot">+0°</span>
+              </div>
+              <input type="range" id="ctrl-fine-rot" class="ctrl-slider" min="-15" max="15" step="0.5" value="0">
+            </div>
+
+            <!-- Zoom -->
+            <div class="ctrl-group">
+              <div class="ctrl-row">
+                <label class="ctrl-label" for="ctrl-zoom">Zoom</label>
+                <span class="ctrl-val" id="val-zoom">100%</span>
+              </div>
+              <input type="range" id="ctrl-zoom" class="ctrl-slider" min="15" max="500" step="1" value="100">
+            </div>
+
+            <hr class="ctrl-sep">
+
+            <!-- Brightness -->
+            <div class="ctrl-group">
+              <div class="ctrl-row">
+                <label class="ctrl-label" for="ctrl-brightness">Brightness</label>
+                <span class="ctrl-val" id="val-brightness">100%</span>
+              </div>
+              <input type="range" id="ctrl-brightness" class="ctrl-slider" min="40" max="220" step="1" value="100">
+            </div>
+
+            <!-- Contrast -->
+            <div class="ctrl-group">
+              <div class="ctrl-row">
+                <label class="ctrl-label" for="ctrl-contrast">Contrast</label>
+                <span class="ctrl-val" id="val-contrast">100%</span>
+              </div>
+              <input type="range" id="ctrl-contrast" class="ctrl-slider" min="40" max="220" step="1" value="100">
+            </div>
+
+            <!-- Saturation -->
+            <div class="ctrl-group">
+              <div class="ctrl-row">
+                <label class="ctrl-label" for="ctrl-saturation">Saturation</label>
+                <span class="ctrl-val" id="val-saturation">100%</span>
+              </div>
+              <input type="range" id="ctrl-saturation" class="ctrl-slider" min="0" max="220" step="1" value="100">
+            </div>
+
+            <hr class="ctrl-sep">
+
+            <!-- Filter Presets -->
+            <div class="ctrl-group">
+              <div class="ctrl-label" style="margin-bottom:0.3rem">Filter Preset</div>
+              <div class="filter-presets">
+                <button class="filter-preset-btn active" data-filter="none">None</button>
+                <button class="filter-preset-btn" data-filter="vivid">Vivid</button>
+                <button class="filter-preset-btn" data-filter="warm">Warm</button>
+                <button class="filter-preset-btn" data-filter="cool">Cool</button>
+                <button class="filter-preset-btn" data-filter="bw">B&amp;W</button>
+                <button class="filter-preset-btn" data-filter="fade">Fade</button>
+              </div>
+            </div>
+
+            <hr class="ctrl-sep">
+
+            <button id="btn-reset-editor" class="btn btn-secondary btn-sm">↺ Reset All Adjustments</button>
+
+          </div><!-- /.editor-controls -->
+        </div><!-- /.editor-layout -->
+      </div><!-- /.modal-body -->
+      <div class="modal-footer">
+        <div class="editor-upload-progress" id="editor-progress">
+          <div class="upload-spinner"></div>
+          <span>Processing…</span>
+        </div>
+        <div style="flex:1"></div>
+        <div style="font-size:0.75rem;color:var(--text-muted);align-self:center">Exports as 1200×900 JPEG</div>
+        <button id="pe-cancel-btn" class="btn btn-secondary">Cancel</button>
+        <button id="editor-upload-btn" class="btn btn-primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/></svg>
+          Upload &amp; Save Photo
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast container -->
   <div id="toast-container" class="toast-container" aria-live="assertive" aria-atomic="true"></div>
 
   <script src="/js/admin.js"></script>
+  <script src="/js/photo-editor.js"></script>
 </body>
 </html>

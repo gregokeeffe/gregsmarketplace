@@ -35,6 +35,13 @@
     document.getElementById('admin-panel').style.display = 'flex';
     loadAndRender();
     bindPanelEvents();
+    // Expose API for photo-editor.js
+    window._adminAPI = {
+      getInventory: () => inventory,
+      getToken: () => adminToken,
+      saveInventory,
+      showToast,
+    };
   }
 
   function bindLoginForm() {
@@ -281,6 +288,9 @@
         </td>
         <td data-label="Actions">
           <div class="actions-cell">
+            <button class="btn btn-xs btn-secondary photos-btn" data-id="${escAttr(item.id)}" title="Manage photos">
+              📸 Photos${item.photos && item.photos.length ? ` (${item.photos.length})` : ''}
+            </button>
             <button class="btn btn-xs ${item.sold ? 'btn-success' : 'btn-secondary'} toggle-sold-btn" data-id="${escAttr(item.id)}">
               ${item.sold ? 'Mark Available' : 'Mark Sold'}
             </button>
@@ -377,6 +387,14 @@
           if (e.key === 'Enter') saveBtn.click();
           if (e.key === 'Escape') cancelBtn.click();
         });
+      });
+    });
+
+    // Photos
+    document.querySelectorAll('.photos-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const item = inventory.items.find(i => i.id === btn.dataset.id);
+        if (item && window.openPhotoManager) window.openPhotoManager(item);
       });
     });
 
