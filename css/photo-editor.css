@@ -201,36 +201,73 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Editable number field next to each slider */
+.ctrl-num {
+  width: 52px;
+  border: 1.5px solid var(--border-dark);
+  border-radius: var(--radius-sm);
+  padding: 2px 4px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--primary);
+  text-align: right;
+  outline: none;
+  background: var(--card);
+  font-variant-numeric: tabular-nums;
+  -moz-appearance: textfield;
+}
+.ctrl-num:focus { border-color: var(--primary); }
+.ctrl-num::-webkit-inner-spin-button,
+.ctrl-num::-webkit-outer-spin-button { opacity: 1; }
+.ctrl-unit {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-left: 2px;
+  flex-shrink: 0;
+}
+
 .ctrl-slider {
   width: 100%;
-  height: 4px;
+  height: 6px;
   -webkit-appearance: none;
   appearance: none;
-  background: var(--bg-alt);
-  border-radius: 2px;
+  background: linear-gradient(to right, var(--primary) 0%, var(--primary) var(--pct, 50%), var(--border-dark) var(--pct, 50%), var(--border-dark) 100%);
+  border-radius: 3px;
   outline: none;
   cursor: pointer;
-  accent-color: var(--primary);
-  padding: 0 6px;
+  border: 1px solid var(--border-dark);
   box-sizing: border-box;
 }
 .ctrl-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  background: var(--primary);
+  background: #fff;
   cursor: pointer;
-  box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--primary);
+  border: 2.5px solid var(--primary);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+  transition: box-shadow 0.15s;
+}
+.ctrl-slider::-webkit-slider-thumb:hover,
+.ctrl-slider:active::-webkit-slider-thumb {
+  box-shadow: 0 0 0 4px rgba(37,99,235,0.15), 0 1px 4px rgba(0,0,0,0.18);
 }
 .ctrl-slider::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  background: var(--primary);
+  background: #fff;
   cursor: pointer;
-  border: none;
+  border: 2.5px solid var(--primary);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+}
+.ctrl-slider::-moz-range-track {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border-dark);
+  border: 1px solid var(--border-dark);
 }
 
 .rotate-btns { display: flex; gap: 0.5rem; }

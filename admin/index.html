@@ -468,7 +468,7 @@
             <div class="ctrl-group">
               <div class="ctrl-row">
                 <label class="ctrl-label" for="ctrl-fine-rot">Fine Rotation</label>
-                <span class="ctrl-val" id="val-fine-rot">+0°</span>
+                <input type="number" id="val-fine-rot" class="ctrl-num" min="-15" max="15" step="0.5" value="0"><span class="ctrl-unit">°</span>
               </div>
               <input type="range" id="ctrl-fine-rot" class="ctrl-slider" min="-15" max="15" step="0.5" value="0">
             </div>
@@ -477,9 +477,9 @@
             <div class="ctrl-group">
               <div class="ctrl-row">
                 <label class="ctrl-label" for="ctrl-zoom">Zoom</label>
-                <span class="ctrl-val" id="val-zoom">100%</span>
+                <input type="number" id="val-zoom" class="ctrl-num" min="1" max="500" step="1" value="100"><span class="ctrl-unit">%</span>
               </div>
-              <input type="range" id="ctrl-zoom" class="ctrl-slider" min="5" max="500" step="1" value="100">
+              <input type="range" id="ctrl-zoom" class="ctrl-slider" min="1" max="500" step="1" value="100">
             </div>
 
             <hr class="ctrl-sep">
@@ -488,27 +488,27 @@
             <div class="ctrl-group">
               <div class="ctrl-row">
                 <label class="ctrl-label" for="ctrl-brightness">Brightness</label>
-                <span class="ctrl-val" id="val-brightness">100%</span>
+                <input type="number" id="val-brightness" class="ctrl-num" min="0" max="300" step="1" value="100"><span class="ctrl-unit">%</span>
               </div>
-              <input type="range" id="ctrl-brightness" class="ctrl-slider" min="40" max="220" step="1" value="100">
+              <input type="range" id="ctrl-brightness" class="ctrl-slider" min="0" max="300" step="1" value="100">
             </div>
 
             <!-- Contrast -->
             <div class="ctrl-group">
               <div class="ctrl-row">
                 <label class="ctrl-label" for="ctrl-contrast">Contrast</label>
-                <span class="ctrl-val" id="val-contrast">100%</span>
+                <input type="number" id="val-contrast" class="ctrl-num" min="0" max="300" step="1" value="100"><span class="ctrl-unit">%</span>
               </div>
-              <input type="range" id="ctrl-contrast" class="ctrl-slider" min="40" max="220" step="1" value="100">
+              <input type="range" id="ctrl-contrast" class="ctrl-slider" min="0" max="300" step="1" value="100">
             </div>
 
             <!-- Saturation -->
             <div class="ctrl-group">
               <div class="ctrl-row">
                 <label class="ctrl-label" for="ctrl-saturation">Saturation</label>
-                <span class="ctrl-val" id="val-saturation">100%</span>
+                <input type="number" id="val-saturation" class="ctrl-num" min="0" max="300" step="1" value="100"><span class="ctrl-unit">%</span>
               </div>
-              <input type="range" id="ctrl-saturation" class="ctrl-slider" min="0" max="220" step="1" value="100">
+              <input type="range" id="ctrl-saturation" class="ctrl-slider" min="0" max="300" step="1" value="100">
             </div>
 
             <hr class="ctrl-sep">

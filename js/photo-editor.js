@@ -238,7 +238,7 @@
       c.addEventListener('wheel', e => {
         e.preventDefault();
         const factor = e.deltaY < 0 ? 1.07 : 0.93;
-        this.zoom = Math.max(0.05, Math.min(12, this.zoom * factor));
+        this.zoom = Math.max(0.01, Math.min(12, this.zoom * factor));
         this.render();
         syncControls();
       }, { passive: false });
@@ -272,7 +272,7 @@
             e.touches[0].clientX - e.touches[1].clientX,
             e.touches[0].clientY - e.touches[1].clientY
           );
-          this.zoom = Math.max(0.05, Math.min(12, this.zoom * (nd / tDist)));
+          this.zoom = Math.max(0.01, Math.min(12, this.zoom * (nd / tDist)));
           tDist = nd;
           this.render();
           syncControls();
@@ -299,21 +299,30 @@
   /* ================================================================
      UI Sync
      ================================================================ */
+  function setSlider(sliderId, numId, value) {
+    const slider = document.getElementById(sliderId);
+    const num    = document.getElementById(numId);
+    if (!slider || !num) return;
+    slider.value = value;
+    num.value    = value;
+    updateSliderFill(slider);
+  }
+
+  function updateSliderFill(slider) {
+    const min = parseFloat(slider.min);
+    const max = parseFloat(slider.max);
+    const val = parseFloat(slider.value);
+    const pct = ((val - min) / (max - min) * 100).toFixed(1) + '%';
+    slider.style.setProperty('--pct', pct);
+  }
+
   function syncControls() {
     if (!editor) return;
-    const el = id => document.getElementById(id);
-
-    el('ctrl-brightness').value = editor.brightness;
-    el('ctrl-contrast').value   = editor.contrast;
-    el('ctrl-saturation').value = editor.saturation;
-    el('ctrl-fine-rot').value   = editor.fineRot;
-    el('ctrl-zoom').value       = Math.round(editor.zoom * 100);
-
-    el('val-brightness').textContent = editor.brightness + '%';
-    el('val-contrast').textContent   = editor.contrast + '%';
-    el('val-saturation').textContent = editor.saturation + '%';
-    el('val-fine-rot').textContent   = (editor.fineRot >= 0 ? '+' : '') + editor.fineRot + '°';
-    el('val-zoom').textContent       = Math.round(editor.zoom * 100) + '%';
+    setSlider('ctrl-brightness', 'val-brightness', editor.brightness);
+    setSlider('ctrl-contrast',   'val-contrast',   editor.contrast);
+    setSlider('ctrl-saturation', 'val-saturation', editor.saturation);
+    setSlider('ctrl-fine-rot',   'val-fine-rot',   editor.fineRot);
+    setSlider('ctrl-zoom',       'val-zoom',       Math.round(editor.zoom * 100));
 
     document.querySelectorAll('.filter-preset-btn').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.filter === editor.filterPreset);
@@ -332,12 +341,11 @@
       }
     }
     const s = clearAll ? { brightness:100, contrast:100, saturation:100, fineRot:0 } : savedSettings;
-    const el = id => document.getElementById(id);
-    el('ctrl-brightness').value = s.brightness; el('val-brightness').textContent = s.brightness + '%';
-    el('ctrl-contrast').value   = s.contrast;   el('val-contrast').textContent   = s.contrast + '%';
-    el('ctrl-saturation').value = s.saturation; el('val-saturation').textContent = s.saturation + '%';
-    el('ctrl-fine-rot').value   = s.fineRot;    el('val-fine-rot').textContent   = (s.fineRot >= 0 ? '+' : '') + s.fineRot + '°';
-    el('ctrl-zoom').value       = 100;          el('val-zoom').textContent       = '100%';
+    setSlider('ctrl-brightness', 'val-brightness', s.brightness);
+    setSlider('ctrl-contrast',   'val-contrast',   s.contrast);
+    setSlider('ctrl-saturation', 'val-saturation', s.saturation);
+    setSlider('ctrl-fine-rot',   'val-fine-rot',   s.fineRot);
+    setSlider('ctrl-zoom',       'val-zoom',       100);
     document.querySelectorAll('.filter-preset-btn').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.filter === (clearAll ? 'none' : savedSettings.filterPreset));
     });
@@ -769,23 +777,42 @@
       resetControls(true);  // clear all including savedSettings
     });
 
-    /* --- Sliders ------------------------------------------- */
+    /* --- Sliders + number inputs (two-way binding) --------- */
     const sliderDefs = [
-      ['ctrl-brightness', v => { editor.brightness = +v; }],
-      ['ctrl-contrast',   v => { editor.contrast   = +v; }],
-      ['ctrl-saturation', v => { editor.saturation = +v; }],
-      ['ctrl-fine-rot',   v => { editor.fineRot    = parseFloat(v); }],
-      ['ctrl-zoom',       v => { editor.zoom       = +v / 100; }],
+      ['ctrl-brightness', 'val-brightness', v => { editor.brightness = +v; },        0,   300],
+      ['ctrl-contrast',   'val-contrast',   v => { editor.contrast   = +v; },        0,   300],
+      ['ctrl-saturation', 'val-saturation', v => { editor.saturation = +v; },        0,   300],
+      ['ctrl-fine-rot',   'val-fine-rot',   v => { editor.fineRot    = parseFloat(v); }, -15, 15],
+      ['ctrl-zoom',       'val-zoom',       v => { editor.zoom       = +v / 100; },   1,   500],
     ];
-    sliderDefs.forEach(([id, setter]) => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.addEventListener('input', e => {
+    sliderDefs.forEach(([sliderId, numId, setter, min, max]) => {
+      const slider = document.getElementById(sliderId);
+      const num    = document.getElementById(numId);
+      if (!slider || !num) return;
+
+      // Slider → number + render
+      slider.addEventListener('input', () => {
         if (!editor) return;
-        setter(e.target.value);
+        num.value = slider.value;
+        updateSliderFill(slider);
+        setter(slider.value);
         editor.render();
-        syncControls();
       });
+
+      // Number → slider + render (on Enter or blur)
+      const applyNum = () => {
+        if (!editor) return;
+        let v = parseFloat(num.value);
+        if (isNaN(v)) return;
+        v = Math.max(min, Math.min(max, v));
+        num.value    = v;
+        slider.value = v;
+        updateSliderFill(slider);
+        setter(v);
+        editor.render();
+      };
+      num.addEventListener('change', applyNum);
+      num.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); applyNum(); } });
     });
 
     /* --- Filter presets ------------------------------------ */
