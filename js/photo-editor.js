@@ -624,17 +624,33 @@
      Init – bind all events
      ================================================================ */
   document.addEventListener('DOMContentLoaded', () => {
-    /* --- File input (multi) --------------------------------- */
-    const fileInput = document.getElementById('photo-file-input');
-    if (fileInput) {
-      fileInput.addEventListener('change', e => {
+
+    /* --- pm-file-input: "Add Photo" button in Photo Manager ---
+         Opens the editor fresh with a new queue of files          */
+    const pmFileInput = document.getElementById('pm-file-input');
+    if (pmFileInput) {
+      pmFileInput.addEventListener('change', e => {
         const files = e.target.files;
+        pmFileInput.value = '';
+        if (!files || !files.length) return;
+        openPhotoEditor(files);
+      });
+    }
+
+    /* --- editor-file-input: "Browse" button inside the editor -
+         Replaces current image (or starts queue) without
+         reopening the modal                                        */
+    const editorFileInput = document.getElementById('editor-file-input');
+    if (editorFileInput) {
+      editorFileInput.addEventListener('change', e => {
+        const files = e.target.files;
+        editorFileInput.value = '';
         if (!files || !files.length) return;
         if (files.length === 1) {
-          // Single file — just load into existing editor
+          // Just swap the image in the already-open editor
           if (editor) editor.loadFile(files[0]).then(syncControls);
         } else {
-          // Multiple files — restart with queue
+          // New multi-file queue, restart editor
           fileQueue = Array.from(files);
           queueIndex = 0;
           const canvas = document.getElementById('editor-canvas');
@@ -644,13 +660,17 @@
           updateQueueUI();
           editor.loadFile(fileQueue[0]).then(syncControls);
         }
-        fileInput.value = '';
       });
     }
 
-    /* --- Browse button -------------------------------------- */
+    /* --- Browse button inside editor ----------------------- */
     document.getElementById('editor-browse-btn').addEventListener('click', () => {
-      document.getElementById('photo-file-input').click();
+      document.getElementById('editor-file-input').click();
+    });
+
+    /* --- Add Photo button in Photo Manager ----------------- */
+    document.getElementById('pm-add-photo-btn').addEventListener('click', () => {
+      document.getElementById('pm-file-input').click();
     });
 
     /* --- Skip button --------------------------------------- */
@@ -732,21 +752,6 @@
     document.getElementById('pe-close-btn').addEventListener('click', () => closeModal('photo-editor-modal'));
     document.getElementById('pe-cancel-btn').addEventListener('click', () => closeModal('photo-editor-modal'));
 
-    /* --- Add photo button — open file picker directly ------ */
-    document.getElementById('pm-add-photo-btn').addEventListener('click', () => {
-      const fi = document.getElementById('photo-file-input');
-      fi.value = '';
-      // Temporarily intercept the change event to open the editor with whatever is chosen
-      fi.onchange = (e) => {
-        fi.onchange = null;
-        const files = e.target.files;
-        if (files && files.length) {
-          openPhotoEditor(files);
-        }
-        fi.value = '';
-      };
-      fi.click();
-    });
 
     /* --- Overlay click to close --------------------------- */
     document.getElementById('photo-manager-modal').addEventListener('click', e => {
