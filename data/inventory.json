@@ -1,0 +1,427 @@
+{
+  "settings": {
+    "siteName": "Greg's Marketplace",
+    "sellerZip": "80202",
+    "paypalMe": "YourPayPalUsername",
+    "paypalEmail": "your-paypal@example.com",
+    "sellerAwayMode": false,
+    "sellerAwayMessage": "I'm currently away and not accepting new purchases. Please check back soon — I'll be back shortly!",
+    "contactEmail": ""
+  },
+  "items": [
+    {
+      "id": "bike-001",
+      "title": "Trek Marlin 7 Mountain Bike",
+      "category": "Bicycles",
+      "price": 549.00,
+      "condition": "Used – Excellent",
+      "description": "2021 Trek Marlin 7 in outstanding condition. Only ridden about 200 miles on light trail and gravel. Hydraulic disc brakes, 29\" wheels, 1x10 Shimano Deore drivetrain. No scratches on the frame, tires have plenty of tread. Selling because I upgraded to a full-suspension rig. Great deal for someone looking to get into mountain biking.",
+      "details": {
+        "Brand": "Trek",
+        "Model": "Marlin 7",
+        "Year": "2021",
+        "Frame Size": "Medium (17.5\")",
+        "Color": "Nautical Navy / Quicksilver",
+        "Frame Material": "Alpha Silver Aluminum",
+        "Drivetrain": "Shimano Deore 1x10",
+        "Brakes": "TRP HY/RD Hydraulic Disc",
+        "Wheel Size": "29\"",
+        "Fork": "RockShox Judy Silver TK 100mm"
+      },
+      "shipping": {
+        "available": true,
+        "localPickup": true,
+        "packageSize": "freight",
+        "estimatedLocalCost": 0,
+        "estimatedNationalCost": 85,
+        "notes": "Bike will be partially disassembled (front wheel, handlebars, pedals removed) and packed in a bike box. Buyer pays actual shipping. Local pickup always welcome and free."
+      },
+      "photos": [
+        "https://picsum.photos/seed/bike001a/800/600",
+        "https://picsum.photos/seed/bike001b/800/600",
+        "https://picsum.photos/seed/bike001c/800/600"
+      ],
+      "sold": false,
+      "crossListings": {
+        "ebay": "",
+        "facebook": ""
+      }
+    },
+    {
+      "id": "bike-002",
+      "title": "Giant Contend AR 3 Road Bike",
+      "category": "Bicycles",
+      "price": 425.00,
+      "condition": "Used – Good",
+      "description": "2020 Giant Contend AR 3 endurance road bike. Rides smooth on pavement and light gravel. Shimano Claris 2x8 drivetrain, mechanical disc brakes. Some minor cosmetic scratches on the downtube but mechanically perfect. Includes bottle cages and a saddle bag.",
+      "details": {
+        "Brand": "Giant",
+        "Model": "Contend AR 3",
+        "Year": "2020",
+        "Frame Size": "Medium",
+        "Color": "Metallic Black",
+        "Frame Material": "ALUXX Aluminum",
+        "Drivetrain": "Shimano Claris 2x8",
+        "Brakes": "TRP Spyre Mechanical Disc",
+        "Wheel Size": "700c",
+        "Tires": "Giant Crosscut Tire 700x32c"
+      },
+      "shipping": {
+        "available": true,
+        "localPickup": true,
+        "packageSize": "freight",
+        "estimatedLocalCost": 0,
+        "estimatedNationalCost": 85,
+        "notes": "Partial disassembly required for shipping. Buyer pays actual freight cost."
+      },
+      "photos": [
+        "https://picsum.photos/seed/bike002a/800/600",
+        "https://picsum.photos/seed/bike002b/800/600"
+      ],
+      "sold": false,
+      "crossListings": {
+        "ebay": "https://www.ebay.com",
+        "facebook": ""
+      }
+    },
+    {
+      "id": "parts-001",
+      "title": "Shimano XT M8100 Rear Derailleur",
+      "category": "Bicycle Parts",
+      "price": 89.00,
+      "condition": "Used – Like New",
+      "description": "Shimano Deore XT M8100 12-speed rear derailleur. Removed from bike after upgrading to electronic shifting. Less than 500 miles use. Shadow RD+ technology for smooth, quiet shifting. Compatible with 10-51T cassettes.",
+      "details": {
+        "Brand": "Shimano",
+        "Model": "Deore XT M8100",
+        "Speed": "12-speed",
+        "Cage Length": "Long",
+        "Max Cassette": "51T",
+        "Technology": "Shadow RD+",
+        "Condition": "Excellent – minor cable housing wear only"
+      },
+      "shipping": {
+        "available": true,
+        "localPickup": true,
+        "packageSize": "small",
+        "estimatedLocalCost": 6,
+        "estimatedNationalCost": 12,
+        "notes": "Ships in padded envelope or small box via USPS Priority."
+      },
+      "photos": [
+        "https://picsum.photos/seed/parts001a/800/600",
+        "https://picsum.photos/seed/parts001b/800/600"
+      ],
+      "sold": false,
+      "crossListings": {
+        "ebay": "https://www.ebay.com",
+        "facebook": ""
+      }
+    },
+    {
+      "id": "parts-002",
+      "title": "Maxxis Aggressor 29x2.3 Tires – Pair",
+      "category": "Bicycle Parts",
+      "price": 65.00,
+      "condition": "Used – Good",
+      "description": "Matched pair of Maxxis Aggressor 29x2.3\" EXO TR (tubeless ready) tires. About 300 miles of use, no cuts or tears, plenty of knob life left. Great all-around MTB trail tire. Selling as a pair.",
+      "details": {
+        "Brand": "Maxxis",
+        "Model": "Aggressor",
+        "Size": "29x2.3\"",
+        "Casing": "EXO",
+        "Tubeless": "Yes (TR)",
+        "Compound": "Dual Compound",
+        "Quantity": "2 tires"
+      },
+      "shipping": {
+        "available": true,
+        "localPickup": true,
+        "packageSize": "medium",
+        "estimatedLocalCost": 12,
+        "estimatedNationalCost": 22,
+        "notes": "Ships USPS Priority or UPS ground."
+      },
+      "photos": [
+        "https://picsum.photos/seed/parts002a/800/600"
+      ],
+      "sold": false,
+      "crossListings": {
+        "ebay": "",
+        "facebook": "https://www.facebook.com/marketplace"
+      }
+    },
+    {
+      "id": "household-001",
+      "title": "KitchenAid Artisan Stand Mixer – 5 Qt",
+      "category": "Household Goods",
+      "price": 185.00,
+      "condition": "Used – Excellent",
+      "description": "KitchenAid Artisan 5-quart stand mixer in Empire Red. Works perfectly, all original attachments included: flat beater, dough hook, wire whip, and pouring shield. Light use — mostly used for holiday baking. Retails for $450+.",
+      "details": {
+        "Brand": "KitchenAid",
+        "Model": "KSM150PS Artisan",
+        "Color": "Empire Red",
+        "Capacity": "5 Quart",
+        "Motor": "325 Watt",
+        "Speeds": "10",
+        "Includes": "Flat beater, dough hook, wire whip, pouring shield, bowl"
+      },
+      "shipping": {
+        "available": true,
+        "localPickup": true,
+        "packageSize": "large",
+        "estimatedLocalCost": 20,
+        "estimatedNationalCost": 45,
+        "notes": "Ships double-boxed with original foam inserts if available. Actual shipping cost applies."
+      },
+      "photos": [
+        "https://picsum.photos/seed/kitchen001a/800/600",
+        "https://picsum.photos/seed/kitchen001b/800/600",
+        "https://picsum.photos/seed/kitchen001c/800/600"
+      ],
+      "sold": false,
+      "crossListings": {
+        "ebay": "",
+        "facebook": "https://www.facebook.com/marketplace"
+      }
+    },
+    {
+      "id": "household-002",
+      "title": "Dyson V8 Animal Cordless Vacuum",
+      "category": "Household Goods",
+      "price": 210.00,
+      "condition": "Used – Good",
+      "description": "Dyson V8 Animal cordless stick vacuum. Holds a charge well (~25 minutes run time), all attachments included. Filters recently cleaned. Some light scratches on the main body but suction is strong. Comes with docking/charging station, crevice tool, brush head, and soft dusting brush.",
+      "details": {
+        "Brand": "Dyson",
+        "Model": "V8 Animal",
+        "Run Time": "~25 min (max mode ~7 min)",
+        "Suction": "115 AW",
+        "Filter": "HEPA (recently cleaned)",
+        "Includes": "All attachments + charging dock"
+      },
+      "shipping": {
+        "available": true,
+        "localPickup": true,
+        "packageSize": "large",
+        "estimatedLocalCost": 18,
+        "estimatedNationalCost": 38,
+        "notes": "Ships UPS Ground. Fragile – packed carefully."
+      },
+      "photos": [
+        "https://picsum.photos/seed/dyson001a/800/600",
+        "https://picsum.photos/seed/dyson001b/800/600"
+      ],
+      "sold": true,
+      "crossListings": {
+        "ebay": "https://www.ebay.com",
+        "facebook": "https://www.facebook.com/marketplace"
+      }
+    },
+    {
+      "id": "clothing-001",
+      "title": "Patagonia Nano Puff Jacket – Men's Large",
+      "category": "Clothing & Accessories",
+      "price": 125.00,
+      "condition": "Used – Very Good",
+      "description": "Patagonia Nano Puff insulated jacket in Black, Men's Large. Excellent warmth-to-weight ratio. No tears, broken zippers, or significant wear. Light pilling on the shell in a couple spots (shown in photos). Washed per instructions.",
+      "details": {
+        "Brand": "Patagonia",
+        "Model": "Nano Puff",
+        "Size": "Men's Large",
+        "Color": "Black",
+        "Material": "60g PrimaLoft® Gold insulation",
+        "Shell": "100% recycled nylon",
+        "Pockets": "3 exterior + 1 interior"
+      },
+      "shipping": {
+        "available": true,
+        "localPickup": true,
+        "packageSize": "small",
+        "estimatedLocalCost": 6,
+        "estimatedNationalCost": 10,
+        "notes": "Ships USPS Priority in a poly mailer."
+      },
+      "photos": [
+        "https://picsum.photos/seed/jacket001a/800/600",
+        "https://picsum.photos/seed/jacket001b/800/600"
+      ],
+      "sold": false,
+      "crossListings": {
+        "ebay": "",
+        "facebook": "https://www.facebook.com/marketplace"
+      }
+    },
+    {
+      "id": "clothing-002",
+      "title": "Danner Mountain 600 Hiking Boots – Size 10",
+      "category": "Clothing & Accessories",
+      "price": 145.00,
+      "condition": "Used – Good",
+      "description": "Danner Mountain 600 low hiking boots in Mushroom/Brown, Men's Size 10 D (medium width). Full-grain leather upper, Danner Dry waterproof membrane, Vibram outsole. About 100 miles on trail. Minor scuffs on the toe box (shown in photos), waterproofing still excellent. Sole has plenty of life.",
+      "details": {
+        "Brand": "Danner",
+        "Model": "Mountain 600 Low",
+        "Size": "Men's 10 D",
+        "Color": "Mushroom / Brown",
+        "Upper": "Full-grain leather",
+        "Waterproofing": "Danner Dry membrane",
+        "Outsole": "Vibram SPE",
+        "Height": "Low (below ankle)"
+      },
+      "shipping": {
+        "available": true,
+        "localPickup": true,
+        "packageSize": "medium",
+        "estimatedLocalCost": 10,
+        "estimatedNationalCost": 18,
+        "notes": "Ships in original box when possible."
+      },
+      "photos": [
+        "https://picsum.photos/seed/boots001a/800/600",
+        "https://picsum.photos/seed/boots001b/800/600",
+        "https://picsum.photos/seed/boots001c/800/600"
+      ],
+      "sold": false,
+      "crossListings": {
+        "ebay": "https://www.ebay.com",
+        "facebook": ""
+      }
+    },
+    {
+      "id": "furniture-001",
+      "title": "IKEA BEKANT Corner Desk – White",
+      "category": "Furniture",
+      "price": 195.00,
+      "condition": "Used – Good",
+      "description": "IKEA BEKANT L-shaped corner desk in white with black legs. 63\"x43\" work surface. Some minor surface scratches (not visible from normal working position) but structurally solid. All hardware included. Local pickup only — will not ship. Can help disassemble.",
+      "details": {
+        "Brand": "IKEA",
+        "Model": "BEKANT Corner Desk",
+        "Color": "White / Black",
+        "Dimensions": "63\" x 43\" x 29.5\"",
+        "Material": "Particleboard + ABS plastic",
+        "Assembly Required": "Yes (will help disassemble)"
+      },
+      "shipping": {
+        "available": false,
+        "localPickup": true,
+        "packageSize": "freight",
+        "estimatedLocalCost": 0,
+        "estimatedNationalCost": 0,
+        "notes": "LOCAL PICKUP ONLY. Too large to ship economically. Bring a truck or large SUV — this is two large boxes."
+      },
+      "photos": [
+        "https://picsum.photos/seed/desk001a/800/600",
+        "https://picsum.photos/seed/desk001b/800/600"
+      ],
+      "sold": false,
+      "crossListings": {
+        "ebay": "",
+        "facebook": "https://www.facebook.com/marketplace"
+      }
+    },
+    {
+      "id": "furniture-002",
+      "title": "Mid-Century Modern Walnut Bookshelf",
+      "category": "Furniture",
+      "price": 175.00,
+      "condition": "Used – Very Good",
+      "description": "Solid walnut-veneer mid-century style bookshelf, 5 shelves. 48\" tall x 32\" wide x 12\" deep. Beautiful wood grain, sturdy construction. Minor wear on the bottom shelf edge. No wobble. Matches Danish modern and Scandinavian decor perfectly.",
+      "details": {
+        "Style": "Mid-Century Modern",
+        "Material": "Walnut veneer over MDF",
+        "Dimensions": "48\"H x 32\"W x 12\"D",
+        "Shelves": "5 adjustable",
+        "Color": "Walnut / Dark Brown",
+        "Assembly": "None needed"
+      },
+      "shipping": {
+        "available": false,
+        "localPickup": true,
+        "packageSize": "freight",
+        "estimatedLocalCost": 0,
+        "estimatedNationalCost": 0,
+        "notes": "Local pickup only. Can help carry to vehicle."
+      },
+      "photos": [
+        "https://picsum.photos/seed/shelf001a/800/600",
+        "https://picsum.photos/seed/shelf001b/800/600"
+      ],
+      "sold": false,
+      "crossListings": {
+        "ebay": "",
+        "facebook": "https://www.facebook.com/marketplace"
+      }
+    },
+    {
+      "id": "misc-001",
+      "title": "RIDGID 18V 3-Tool Combo Kit (R9208)",
+      "category": "Misc",
+      "price": 110.00,
+      "condition": "Used – Very Good",
+      "description": "RIDGID 18V 3-piece combo kit: drill/driver, circular saw, and LED work light. Both batteries hold a charge, charger included. Drill chuck is tight, saw blade is sharp. Original carrying bag included. Lightly used for home projects.",
+      "details": {
+        "Brand": "RIDGID",
+        "Model": "R9208",
+        "Includes": "Drill/Driver, 6.5\" Circular Saw, LED Work Light",
+        "Battery": "18V Lithium-Ion (2 batteries)",
+        "Charger": "Included",
+        "Bag": "Original RIDGID bag included"
+      },
+      "shipping": {
+        "available": true,
+        "localPickup": true,
+        "packageSize": "large",
+        "estimatedLocalCost": 15,
+        "estimatedNationalCost": 30,
+        "notes": "Ships UPS Ground with batteries properly packaged per carrier requirements."
+      },
+      "photos": [
+        "https://picsum.photos/seed/tools001a/800/600",
+        "https://picsum.photos/seed/tools001b/800/600",
+        "https://picsum.photos/seed/tools001c/800/600"
+      ],
+      "sold": false,
+      "crossListings": {
+        "ebay": "https://www.ebay.com",
+        "facebook": "https://www.facebook.com/marketplace"
+      }
+    },
+    {
+      "id": "misc-002",
+      "title": "Nintendo Switch OLED + 3 Games",
+      "category": "Misc",
+      "price": 265.00,
+      "condition": "Used – Excellent",
+      "description": "Nintendo Switch OLED model in white. Includes dock, HDMI cable, power adapter, Joy-Con grip, and both Joy-Con controllers (no drift issues). Games included: Zelda: Tears of the Kingdom, Mario Kart 8 Deluxe, and Pokémon Scarlet. Micro SD card (128GB) also included.",
+      "details": {
+        "Brand": "Nintendo",
+        "Model": "Switch OLED",
+        "Color": "White",
+        "Screen": "7\" OLED",
+        "Storage": "64GB internal + 128GB SD card",
+        "Includes": "Dock, HDMI, power adapter, Joy-Con grip, 3 games, 128GB SD",
+        "Games": "Zelda TotK, Mario Kart 8 DX, Pokémon Scarlet"
+      },
+      "shipping": {
+        "available": true,
+        "localPickup": true,
+        "packageSize": "medium",
+        "estimatedLocalCost": 10,
+        "estimatedNationalCost": 18,
+        "notes": "Ships USPS Priority Mail with insurance."
+      },
+      "photos": [
+        "https://picsum.photos/seed/switch001a/800/600",
+        "https://picsum.photos/seed/switch001b/800/600"
+      ],
+      "sold": false,
+      "crossListings": {
+        "ebay": "",
+        "facebook": "https://www.facebook.com/marketplace"
+      }
+    }
+  ]
+}

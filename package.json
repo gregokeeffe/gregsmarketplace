@@ -1,0 +1,9 @@
+{
+  "name": "gregsmarketplace",
+  "version": "1.0.0",
+  "description": "Greg's Marketplace – personal buy/sell site",
+  "private": true,
+  "dependencies": {
+    "@netlify/blobs": "^8.1.0"
+  }
+}

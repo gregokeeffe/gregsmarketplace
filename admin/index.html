@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin – Greg's Marketplace</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚙️</text></svg>">
+  <link rel="stylesheet" href="/css/admin.css">
+  <meta name="robots" content="noindex, nofollow">
+</head>
+<body>
+
+  <!-- ===== LOGIN SCREEN ===================================== -->
+  <div id="login-screen" class="login-screen" style="display:flex">
+    <div class="login-card">
+      <div class="login-logo">
+        <h1>Greg's Marketplace</h1>
+        <p>Admin Panel – please log in</p>
+      </div>
+      <form class="login-form" id="login-form" autocomplete="off" novalidate>
+        <div class="form-group">
+          <label class="form-label" for="login-password">Admin Password</label>
+          <input
+            type="password"
+            class="form-input"
+            id="login-password"
+            placeholder="Enter password"
+            required
+            autocomplete="current-password"
+            autofocus
+          >
+        </div>
+        <div class="login-error" id="login-error" role="alert"></div>
+        <button type="submit" class="login-btn" id="login-btn">Log In</button>
+      </form>
+      <p style="text-align:center;margin-top:1.25rem;font-size:0.8rem;color:#94a3b8">
+        <a href="/" style="color:#94a3b8">← Back to marketplace</a>
+      </p>
+    </div>
+  </div>
+
+  <!-- ===== ADMIN PANEL ===================================== -->
+  <div id="admin-panel" class="admin-layout" style="display:none">
+
+    <!-- Sidebar overlay (mobile) -->
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+    <!-- Sidebar -->
+    <aside id="admin-sidebar" class="admin-sidebar" role="navigation" aria-label="Admin navigation">
+      <div class="sidebar-header">
+        <h2>Greg's Marketplace</h2>
+        <p>Admin Panel</p>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-label">Overview</div>
+        <button class="nav-item active" data-section="dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span>Dashboard</span>
+        </button>
+
+        <div class="nav-section-label">Inventory</div>
+        <button class="nav-item" data-section="items">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          <span>All Listings</span>
+          <span class="nav-badge" id="sold-count-badge">0</span>
+        </button>
+
+        <div class="nav-section-label">Store</div>
+        <button class="nav-item" data-section="settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          <span>Settings</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button id="logout-btn" class="logout-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Log Out
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <div class="admin-main">
+
+      <!-- Top bar -->
+      <div class="admin-topbar">
+        <div class="topbar-left">
+          <button id="mobile-menu-btn" class="mobile-menu-btn" aria-label="Open navigation" aria-expanded="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            Menu
+          </button>
+          <span class="topbar-title" id="topbar-title">Dashboard</span>
+        </div>
+        <div class="topbar-right">
+          <div class="away-toggle-wrap" title="Toggle seller away mode">
+            <label class="toggle-label" for="away-toggle">Away mode</label>
+            <label class="toggle-switch">
+              <input type="checkbox" id="away-toggle" aria-label="Seller away mode">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <a href="/" target="_blank" class="btn btn-secondary btn-sm">View Site ↗</a>
+        </div>
+      </div>
+
+      <!-- Content sections -->
+      <div class="admin-content">
+
+        <!-- ===== Dashboard ================================== -->
+        <section class="admin-section active" id="section-dashboard">
+          <div class="section-header">
+            <h2 class="section-title">Dashboard</h2>
+          </div>
+
+          <div class="alert alert-info">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <div>Changes you make here are saved live to your site via Netlify Blobs. No code commits needed.</div>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-label">Total Listings</div>
+              <div class="stat-value" id="stat-total">—</div>
+              <div class="stat-sub">across all categories</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Available</div>
+              <div class="stat-value" id="stat-available" style="color:var(--success)">—</div>
+              <div class="stat-sub">ready to sell</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Sold</div>
+              <div class="stat-value" id="stat-sold" style="color:var(--danger)">—</div>
+              <div class="stat-sub">completed sales</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Total Value</div>
+              <div class="stat-value" id="stat-value">—</div>
+              <div class="stat-sub">of available items</div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:0.75rem;flex-wrap:wrap">
+            <button id="add-item-btn2" class="btn btn-primary">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add New Listing
+            </button>
+            <a href="/" target="_blank" class="btn btn-secondary">Browse Live Site ↗</a>
+          </div>
+        </section>
+
+        <!-- ===== All Listings =============================== -->
+        <section class="admin-section" id="section-items">
+          <div class="section-header">
+            <h2 class="section-title">All Listings</h2>
+            <button id="add-item-btn" class="btn btn-primary">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add Listing
+            </button>
+          </div>
+
+          <div class="search-filter-bar">
+            <input type="search" class="admin-search-input" id="admin-item-search" placeholder="Search title or ID…" autocomplete="off">
+            <select class="admin-filter-select" id="filter-category">
+              <option value="">All Categories</option>
+              <option>Bicycles</option>
+              <option>Bicycle Parts</option>
+              <option>Household Goods</option>
+              <option>Clothing &amp; Accessories</option>
+              <option>Furniture</option>
+              <option>Misc</option>
+            </select>
+            <select class="admin-filter-select" id="filter-status">
+              <option value="">All Status</option>
+              <option value="available">Available</option>
+              <option value="sold">Sold</option>
+            </select>
+          </div>
+
+          <div class="items-table-wrap">
+            <table class="items-table" aria-label="Inventory items">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>ID</th>
+                  <th>Price</th>
+                  <th>Status</th>
+                  <th>Cross-listings</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="items-tbody">
+                <tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text-muted)">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ===== Settings =================================== -->
+        <section class="admin-section" id="section-settings">
+          <div class="section-header">
+            <h2 class="section-title">Store Settings</h2>
+          </div>
+
+          <form id="settings-form" novalidate>
+            <div class="settings-grid">
+
+              <div class="settings-card">
+                <div class="settings-card-title">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                  Store Info
+                </div>
+                <div class="settings-form">
+                  <div class="settings-field">
+                    <label class="settings-label" for="s-site-name">Site Name</label>
+                    <input type="text" class="settings-input" id="s-site-name" placeholder="Greg's Marketplace">
+                  </div>
+                  <div class="settings-field">
+                    <label class="settings-label" for="s-seller-zip">Your ZIP Code</label>
+                    <input type="text" class="settings-input" id="s-seller-zip" placeholder="80202" maxlength="5" inputmode="numeric">
+                    <span class="settings-hint">Used for shipping estimates</span>
+                  </div>
+                  <div class="settings-field">
+                    <label class="settings-label" for="s-contact-email">Contact Email (optional)</label>
+                    <input type="email" class="settings-input" id="s-contact-email" placeholder="you@example.com">
+                  </div>
+                </div>
+              </div>
+
+              <div class="settings-card">
+                <div class="settings-card-title">
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7.076 21.337H2.47a.641.641 0 01-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106z"/></svg>
+                  PayPal Settings
+                </div>
+                <div class="settings-form">
+                  <div class="settings-field">
+                    <label class="settings-label" for="s-paypal-me">PayPal.me Username</label>
+                    <input type="text" class="settings-input" id="s-paypal-me" placeholder="YourUsername">
+                    <span class="settings-hint">From paypal.me/YourUsername — preferred</span>
+                  </div>
+                  <div class="settings-field">
+                    <label class="settings-label" for="s-paypal-email">PayPal Email (fallback)</label>
+                    <input type="email" class="settings-input" id="s-paypal-email" placeholder="you@paypal.com">
+                    <span class="settings-hint">Used if PayPal.me is not set</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="settings-card" style="grid-column:1/-1">
+                <div class="settings-card-title">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                  Seller Away Mode
+                </div>
+                <div class="settings-form">
+                  <div class="alert alert-warning" style="margin-bottom:0">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    <div>Enabling away mode shows a banner on your site and disables the PayPal checkout button until you turn it off.</div>
+                  </div>
+                  <div class="settings-field">
+                    <label class="settings-label" for="s-away-message">Away Message</label>
+                    <textarea class="settings-input settings-textarea" id="s-away-message" placeholder="I'm currently away and not accepting new purchases. Please check back soon!"></textarea>
+                    <span class="settings-hint">Shown to buyers while away mode is active</span>
+                  </div>
+                  <p style="font-size:0.875rem;color:var(--text-muted)">Toggle away mode from the top-right switch in the header above.</p>
+                </div>
+              </div>
+
+            </div>
+
+            <div style="margin-top:1.5rem;display:flex;justify-content:flex-end">
+              <button type="submit" class="btn btn-primary">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                Save Settings
+              </button>
+            </div>
+          </form>
+        </section>
+
+      </div><!-- /.admin-content -->
+    </div><!-- /.admin-main -->
+  </div><!-- /#admin-panel -->
+
+  <!-- ===== ADD ITEM MODAL ================================== -->
+  <div id="add-item-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title" style="display:none">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-title">Add New Listing</h3>
+        <button class="modal-close" data-close-modal="add-item-modal" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="add-item-form" novalidate>
+          <div class="add-item-form">
+
+            <div class="form-row">
+              <div class="form-group form-full">
+                <label class="form-label" for="f-title">Title *</label>
+                <input type="text" class="form-input" id="f-title" name="title" required placeholder="e.g. Trek Marlin 7 Mountain Bike">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="f-category">Category *</label>
+                <select class="form-input" id="f-category" name="category" required>
+                  <option value="">Select…</option>
+                  <option>Bicycles</option>
+                  <option>Bicycle Parts</option>
+                  <option>Household Goods</option>
+                  <option>Clothing &amp; Accessories</option>
+                  <option>Furniture</option>
+                  <option>Misc</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="f-price">Price ($) *</label>
+                <input type="number" class="form-input" id="f-price" name="price" required min="0" step="0.01" placeholder="0.00">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="f-condition">Condition</label>
+              <input type="text" class="form-input" id="f-condition" name="condition" placeholder="e.g. Used – Excellent">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="f-description">Description</label>
+              <textarea class="form-input" id="f-description" name="description" rows="4" placeholder="Describe the item…" style="resize:vertical"></textarea>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="f-photos">Photo URLs (one per line)</label>
+              <textarea class="form-input" id="f-photos" name="photos" rows="3" placeholder="https://…&#10;https://…" style="resize:vertical"></textarea>
+              <span style="font-size:0.78rem;color:var(--text-muted)">Add images to /images/items/item-id/ in your repo, then reference as /images/items/item-id/1.jpg</span>
+            </div>
+
+            <fieldset style="border:1px solid var(--border);border-radius:var(--radius);padding:1rem">
+              <legend style="font-size:0.875rem;font-weight:600;padding:0 0.5rem">Shipping</legend>
+              <div class="form-row" style="margin-top:0.75rem">
+                <div class="form-group">
+                  <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;font-size:0.875rem">
+                    <input type="checkbox" id="f-shipping" name="shipping_available" checked> Shipping available
+                  </label>
+                </div>
+                <div class="form-group">
+                  <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;font-size:0.875rem">
+                    <input type="checkbox" id="f-pickup" name="local_pickup" checked> Local pickup
+                  </label>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="f-pkg">Package Size</label>
+                  <select class="form-input" id="f-pkg" name="package_size">
+                    <option value="small">Small (envelope)</option>
+                    <option value="medium" selected>Medium (box)</option>
+                    <option value="large">Large (big box)</option>
+                    <option value="freight">Freight (bike/furniture)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="f-local-cost">Est. Local Ship ($)</label>
+                  <input type="number" class="form-input" id="f-local-cost" name="local_cost" min="0" step="0.01" value="0">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="f-national-cost">Est. National Ship ($)</label>
+                  <input type="number" class="form-input" id="f-national-cost" name="national_cost" min="0" step="0.01" value="0">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="f-ship-notes">Shipping Notes</label>
+                  <input type="text" class="form-input" id="f-ship-notes" name="shipping_notes" placeholder="Any special notes">
+                </div>
+              </div>
+            </fieldset>
+
+            <fieldset style="border:1px solid var(--border);border-radius:var(--radius);padding:1rem">
+              <legend style="font-size:0.875rem;font-weight:600;padding:0 0.5rem">Cross-Listings (optional)</legend>
+              <div class="form-row" style="margin-top:0.75rem">
+                <div class="form-group">
+                  <label class="form-label" for="f-ebay">eBay Listing URL</label>
+                  <input type="url" class="form-input" id="f-ebay" name="ebay_url" placeholder="https://ebay.com/itm/…">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="f-facebook">Facebook Marketplace URL</label>
+                  <input type="url" class="form-input" id="f-facebook" name="facebook_url" placeholder="https://facebook.com/marketplace/…">
+                </div>
+              </div>
+            </fieldset>
+
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close-modal="add-item-modal">Cancel</button>
+        <button type="submit" form="add-item-form" class="btn btn-primary">Add Listing</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div id="toast-container" class="toast-container" aria-live="assertive" aria-atomic="true"></div>
+
+  <script src="/js/admin.js"></script>
+</body>
+</html>
