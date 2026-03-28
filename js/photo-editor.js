@@ -160,6 +160,23 @@
       ctx.drawImage(this.img, -this.img.width / 2, -this.img.height / 2);
       ctx.restore();
 
+      // Watermark
+      const padding = 14;
+      const text = '© gregsmarketplace.com';
+      const fontSize = 22;
+      ctx.save();
+      ctx.font = `500 ${fontSize}px system-ui, -apple-system, sans-serif`;
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'bottom';
+      // Shadow for readability on any background
+      ctx.shadowColor = 'rgba(0,0,0,0.55)';
+      ctx.shadowBlur = 6;
+      ctx.shadowOffsetX = 1;
+      ctx.shadowOffsetY = 1;
+      ctx.fillStyle = 'rgba(255,255,255,0.82)';
+      ctx.fillText(text, ec.width - padding, ec.height - padding);
+      ctx.restore();
+
       return new Promise(resolve => ec.toBlob(resolve, 'image/jpeg', 0.82));
     }
 

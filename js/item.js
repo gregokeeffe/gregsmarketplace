@@ -111,23 +111,20 @@
       priceAreaEl.insertAdjacentHTML('beforeend', '<span class="item-sold-label">Sold</span>');
     }
 
-    // Location
+    // Location — prefer per-item ZIP, fall back to global
     const locEl = document.getElementById('item-location');
-    if (locEl && settings && settings.sellerZip) {
+    const zip = item.sellerZip || (settings && settings.sellerZip) || '';
+    if (locEl && zip) {
       locEl.innerHTML = `
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        Seller ZIP: ${escHtml(settings.sellerZip)}`;
+        Seller ZIP: ${escHtml(zip)}`;
     }
 
     // PayPal
     renderPayPal(item, settings);
 
-    // Shipping estimate
+    // Shipping estimate — use per-item ZIP if available
     renderShippingEstimate(item, settings);
-
-    // QR Code
-    const itemUrl = window.location.origin + '/item.html?id=' + encodeURIComponent(item.id);
-    generateQrCode(itemUrl);
 
     // Accordion content
     const descEl = document.getElementById('acc-description');
@@ -268,7 +265,7 @@
       return;
     }
 
-    const sellerZip = settings && settings.sellerZip ? settings.sellerZip : '';
+    const sellerZip = item.sellerZip || (settings && settings.sellerZip) || '';
 
     wrap.innerHTML = `
       <h4>
@@ -345,34 +342,6 @@
         <div class="ship-cost">${main}</div>
         ${sub ? `<div class="ship-note">${sub}</div>` : ''}
       </div>`;
-  }
-
-  /* --- QR Code --------------------------------------------- */
-  function generateQrCode(url) {
-    const container = document.getElementById('qr-code');
-    const urlEl = document.getElementById('qr-url');
-    if (!container) return;
-    if (urlEl) urlEl.textContent = url;
-
-    // qrcode.js must be loaded before this runs
-    if (typeof QRCode !== 'undefined') {
-      new QRCode(container, {
-        text: url,
-        width: 128,
-        height: 128,
-        colorDark: '#1e293b',
-        colorLight: '#ffffff',
-        correctLevel: QRCode.CorrectLevel.M
-      });
-    } else {
-      // Fallback: use a free QR API
-      const img = document.createElement('img');
-      img.src = `https://api.qrserver.com/v1/create-qr-code/?size=128x128&data=${encodeURIComponent(url)}&color=1e293b`;
-      img.alt = 'QR code for this listing';
-      img.width = 128;
-      img.height = 128;
-      container.appendChild(img);
-    }
   }
 
   /* --- Lightbox -------------------------------------------- */
