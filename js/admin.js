@@ -4,7 +4,7 @@
 (function () {
   'use strict';
 
-  const CATEGORIES = ['Bicycles', 'Bicycle Parts', 'Household Goods', 'Clothing & Accessories', 'Furniture', 'Misc'];
+  const CATEGORIES = ['Bicycles', 'Bicycle Parts', 'Autos & Parts', 'Household Goods', 'Clothing & Accessories', 'Furniture', 'Misc'];
   const PACKAGE_SIZES = ['small', 'medium', 'large', 'freight'];
 
   let adminToken = sessionStorage.getItem('gm_admin_token') || '';
@@ -236,8 +236,9 @@
     let items = inventory.items.slice();
 
     if (filterCategory) items = items.filter(i => i.category === filterCategory);
-    if (filterStatus === 'available') items = items.filter(i => !i.sold);
+    if (filterStatus === 'available') items = items.filter(i => !i.sold && !i.hidden);
     if (filterStatus === 'sold') items = items.filter(i => i.sold);
+    if (filterStatus === 'hidden') items = items.filter(i => i.hidden);
     if (searchText) {
       const q = searchText.toLowerCase();
       items = items.filter(i => i.title.toLowerCase().includes(q) || i.id.toLowerCase().includes(q));
@@ -279,8 +280,8 @@
           </div>
         </td>
         <td data-label="Status">
-          <span class="status-badge ${item.sold ? 'status-sold' : 'status-available'}" id="status-badge-${escAttr(item.id)}">
-            ${item.sold ? 'Sold' : 'Available'}
+          <span class="status-badge ${item.hidden ? 'status-hidden' : item.sold ? 'status-sold' : 'status-available'}" id="status-badge-${escAttr(item.id)}">
+            ${item.hidden ? 'Hidden' : item.sold ? 'Sold' : 'Available'}
           </span>
         </td>
         <td data-label="Cross-listings">
@@ -296,8 +297,12 @@
             <button class="btn btn-xs btn-secondary photos-btn" data-id="${escAttr(item.id)}" title="Manage photos">
               📸 Photos${item.photos && item.photos.length ? ` (${item.photos.length})` : ''}
             </button>
+            <button class="btn btn-xs btn-secondary edit-desc-btn" data-id="${escAttr(item.id)}" title="Edit description">✏️ Desc</button>
             <button class="btn btn-xs ${item.sold ? 'btn-success' : 'btn-secondary'} toggle-sold-btn" data-id="${escAttr(item.id)}">
               ${item.sold ? 'Mark Available' : 'Mark Sold'}
+            </button>
+            <button class="btn btn-xs ${item.hidden ? 'btn-warning' : 'btn-secondary'} toggle-hidden-btn" data-id="${escAttr(item.id)}" title="${item.hidden ? 'Show on site' : 'Hide from site'}">
+              ${item.hidden ? '👁 Show' : '🙈 Hide'}
             </button>
             <a href="/item.html?id=${encodeURIComponent(item.id)}" target="_blank" class="btn btn-xs btn-secondary" title="View listing">👁</a>
             <button class="btn btn-xs btn-danger delete-item-btn" data-id="${escAttr(item.id)}" title="Delete">🗑</button>
@@ -457,6 +462,86 @@
 
         cell.querySelector('.cancel-cross-btn').addEventListener('click', () => {
           renderItems();
+        });
+      });
+    });
+
+    // Toggle hidden
+    document.querySelectorAll('.toggle-hidden-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.id;
+        const item = inventory.items.find(i => i.id === id);
+        if (!item) return;
+        item.hidden = !item.hidden;
+        btn.disabled = true;
+        try {
+          await saveInventory(inventory);
+          renderItems();
+          renderStats();
+          showToast(item.hidden ? `"${item.title}" hidden from site` : `"${item.title}" visible on site`, item.hidden ? 'warning' : 'success');
+        } catch (ex) {
+          item.hidden = !item.hidden;
+          showToast(ex.message, 'error');
+        }
+      });
+    });
+
+    // Edit description
+    document.querySelectorAll('.edit-desc-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.id;
+        const item = inventory.items.find(i => i.id === id);
+        if (!item) return;
+        const row = btn.closest('tr');
+        if (!row) return;
+
+        // Expand a full-width row below this one
+        const existingExpanded = document.getElementById('desc-row-' + id);
+        if (existingExpanded) { existingExpanded.remove(); return; }
+
+        const colCount = row.cells.length;
+        const expandRow = document.createElement('tr');
+        expandRow.id = 'desc-row-' + id;
+        expandRow.innerHTML = `
+          <td colspan="${colCount}" style="padding:0.75rem 1rem;background:var(--bg);border-top:none">
+            <div style="display:flex;flex-direction:column;gap:0.5rem">
+              <label style="font-size:0.75rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em">
+                Description — ${escHtml(item.title)}
+              </label>
+              <textarea id="desc-textarea-${escAttr(id)}" rows="5"
+                style="width:100%;padding:0.5rem 0.75rem;border:1.5px solid var(--border-dark);border-radius:var(--radius);font-size:0.875rem;line-height:1.6;resize:vertical;font-family:var(--font)"
+              >${escHtml(item.description || '')}</textarea>
+              <div style="display:flex;gap:0.5rem">
+                <button class="btn btn-xs btn-primary save-desc-btn" data-id="${escAttr(id)}">Save</button>
+                <button class="btn btn-xs btn-secondary cancel-desc-btn" data-id="${escAttr(id)}">Cancel</button>
+              </div>
+            </div>
+          </td>`;
+        row.after(expandRow);
+
+        const textarea = document.getElementById('desc-textarea-' + id);
+        textarea.focus();
+
+        expandRow.querySelector('.save-desc-btn').addEventListener('click', async () => {
+          const newDesc = textarea.value.trim();
+          const oldDesc = item.description;
+          item.description = newDesc;
+          try {
+            await saveInventory(inventory);
+            expandRow.remove();
+            showToast('Description saved', 'success');
+          } catch (ex) {
+            item.description = oldDesc;
+            showToast(ex.message, 'error');
+          }
+        });
+
+        expandRow.querySelector('.cancel-desc-btn').addEventListener('click', () => {
+          expandRow.remove();
+        });
+
+        textarea.addEventListener('keydown', e => {
+          if (e.key === 'Escape') expandRow.remove();
         });
       });
     });

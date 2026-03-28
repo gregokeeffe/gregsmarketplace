@@ -4,7 +4,7 @@
 (function () {
   'use strict';
 
-  const CATEGORIES = ['All', 'Bicycles', 'Bicycle Parts', 'Household Goods', 'Clothing & Accessories', 'Furniture', 'Misc'];
+  const CATEGORIES = ['All', 'Bicycles', 'Bicycle Parts', 'Autos & Parts', 'Household Goods', 'Clothing & Accessories', 'Furniture', 'Misc'];
 
   let inventory = null;
   let activeCategory = 'All';
@@ -63,8 +63,8 @@
 
     CATEGORIES.forEach(cat => {
       const count = cat === 'All'
-        ? items.filter(i => !i.sold).length
-        : items.filter(i => i.category === cat && !i.sold).length;
+        ? items.filter(i => !i.sold && !i.hidden).length
+        : items.filter(i => i.category === cat && !i.sold && !i.hidden).length;
 
       const btn = document.createElement('button');
       btn.className = 'cat-btn' + (cat === activeCategory ? ' active' : '');
@@ -77,7 +77,7 @@
   /* --- Filtering & Sorting --------------------------------- */
   function getFilteredItems() {
     if (!inventory) return [];
-    let items = inventory.items.slice();
+    let items = inventory.items.filter(i => !i.hidden);
 
     if (activeCategory !== 'All') {
       items = items.filter(i => i.category === activeCategory);
