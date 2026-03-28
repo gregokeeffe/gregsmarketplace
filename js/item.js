@@ -82,15 +82,10 @@
         (item.crossListings.ebay || item.crossListings.facebook);
 
       if (hasCross) {
-        const ebayPrice = item.crossListings.ebayPrice
-          ? item.crossListings.ebayPrice
-          : Math.round(item.price / 0.90);
-        const fbPrice = item.crossListings.facebookPrice
-          ? item.crossListings.facebookPrice
-          : Math.round(item.price / 0.80);
         const rows = [];
 
-        if (item.crossListings.ebay) {
+        // Only show a platform row if BOTH a URL and a price have been entered
+        if (item.crossListings.ebay && item.crossListings.ebayPrice) {
           rows.push(`
             <a href="${escAttr(item.crossListings.ebay)}" target="_blank" rel="noopener noreferrer" class="cross-platform-row cross-row-ebay">
               <div class="cross-platform-logo">
@@ -100,11 +95,11 @@
                 <span class="cross-platform-name">Also on eBay</span>
                 <span class="cross-platform-note">Buyer protection &amp; returns</span>
               </div>
-              <div class="cross-platform-price">$${formatPrice(ebayPrice)}</div>
+              <div class="cross-platform-price">$${formatPrice(item.crossListings.ebayPrice)}</div>
             </a>`);
         }
 
-        if (item.crossListings.facebook) {
+        if (item.crossListings.facebook && item.crossListings.facebookPrice) {
           rows.push(`
             <a href="${escAttr(item.crossListings.facebook)}" target="_blank" rel="noopener noreferrer" class="cross-platform-row cross-row-facebook">
               <div class="cross-platform-logo">
@@ -114,7 +109,7 @@
                 <span class="cross-platform-name">Also on Facebook Marketplace</span>
                 <span class="cross-platform-note">Local pickup preferred</span>
               </div>
-              <div class="cross-platform-price">$${formatPrice(fbPrice)}</div>
+              <div class="cross-platform-price">$${formatPrice(item.crossListings.facebookPrice)}</div>
             </a>`);
         }
 
