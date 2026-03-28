@@ -114,9 +114,11 @@ input, select, textarea { font-family: var(--font); }
   flex-shrink: 0;
 }
 .logo-img {
-  height: 42px;
+  height: 44px;
   width: auto;
   display: block;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.18);
 }
 .site-logo .logo-name {
   font-size: 1.25rem;
@@ -377,6 +379,7 @@ input, select, textarea { font-family: var(--font); }
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   padding: 0.75rem 0.875rem;
   border-top: 1px solid var(--border);
   background: var(--bg);
@@ -413,6 +416,33 @@ input, select, textarea { font-family: var(--font); }
   display: inline-block;
 }
 .view-btn:hover { background: var(--primary-dark); text-decoration: none; color: #fff; }
+
+/* --- Card cross-listing row -------------------------------- */
+.card-cross {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  width: 100%;
+  padding-top: 0.4rem;
+  border-top: 1px solid var(--border);
+  margin-top: 0.1rem;
+}
+.card-cross-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-full);
+  text-decoration: none;
+  transition: opacity 0.15s;
+  line-height: 1;
+}
+.card-cross-item:hover { opacity: 0.8; text-decoration: none; }
+.card-cross-item span { color: var(--text-muted); }
+.card-cross-ebay { background: #f0f6ff; border: 1px solid #c7defe; }
+.card-cross-fb { background: #eef3ff; border: 1px solid #c3d0fa; }
 
 /* --- No Results ------------------------------------------- */
 .no-results {

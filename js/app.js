@@ -139,12 +139,22 @@
 
   function buildCard(item) {
     const photo = (item.photos && item.photos.length) ? item.photos[0] : '/images/placeholder.svg';
-    const badges = [];
-    if (item.crossListings && item.crossListings.ebay) {
-      badges.push('<span class="badge badge-ebay">eBay</span>');
+    const cl = item.crossListings || {};
+
+    const crossRows = [];
+    if (cl.ebay && cl.ebayPrice) {
+      crossRows.push(`
+        <a href="${escAttr(cl.ebay)}" target="_blank" rel="noopener" class="card-cross-item card-cross-ebay" title="Also on eBay">
+          <svg viewBox="0 0 36 16" height="12" aria-hidden="true"><text y="13" font-family="Arial Black,sans-serif" font-size="13" font-weight="900"><tspan fill="#E53238">e</tspan><tspan fill="#0064D2">B</tspan><tspan fill="#F5AF02">a</tspan><tspan fill="#86B817">y</tspan></text></svg>
+          <span>$${formatPrice(cl.ebayPrice)}</span>
+        </a>`);
     }
-    if (item.crossListings && item.crossListings.facebook) {
-      badges.push('<span class="badge badge-facebook">FB Marketplace</span>');
+    if (cl.facebook && cl.facebookPrice) {
+      crossRows.push(`
+        <a href="${escAttr(cl.facebook)}" target="_blank" rel="noopener" class="card-cross-item card-cross-fb" title="Also on Facebook Marketplace">
+          <svg viewBox="0 0 18 18" height="13" aria-hidden="true"><rect width="18" height="18" rx="4" fill="#1877F2"/><path d="M10.2 9.5h1.6l.3-2H10.2V6.3c0-.55.27-.88.9-.88H12V4.1s-.57-.08-1.2-.08c-1.6 0-2.6.97-2.6 2.72V7.5H6.6v2h1.6V15h2V9.5z" fill="white"/></svg>
+          <span>$${formatPrice(cl.facebookPrice)}</span>
+        </a>`);
     }
 
     return `
@@ -152,7 +162,6 @@
         <a href="/item.html?id=${encodeURIComponent(item.id)}" class="card-image-wrap" tabindex="-1" aria-hidden="true">
           <img src="${escAttr(photo)}" alt="${escAttr(item.title)}" loading="lazy" onerror="this.src='/images/placeholder.svg'">
           ${item.sold ? '<div class="sold-overlay"><span>Sold</span></div>' : ''}
-          ${badges.length ? `<div class="card-badges">${badges.join('')}</div>` : ''}
         </a>
         <div class="card-body">
           <div class="card-category">${escHtml(item.category)}</div>
@@ -165,6 +174,7 @@
             : `<span class="card-price">$${formatPrice(item.price)}</span>
                <a href="/item.html?id=${encodeURIComponent(item.id)}" class="view-btn">View</a>`
           }
+          ${crossRows.length ? `<div class="card-cross">${crossRows.join('')}</div>` : ''}
         </div>
       </article>`;
   }
