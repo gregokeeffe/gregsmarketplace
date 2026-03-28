@@ -8,6 +8,8 @@
 
   let currentItem = null;
   let editor = null;
+  let fileQueue = [];
+  let queueIndex = 0;
 
   /* ================================================================
      PhotoEditor Class
@@ -393,12 +395,45 @@
   /* ================================================================
      Photo Editor
      ================================================================ */
-  function openPhotoEditor() {
+  function openPhotoEditor(files) {
+    if (files && files.length) {
+      fileQueue = Array.from(files);
+      queueIndex = 0;
+    } else {
+      fileQueue = [];
+      queueIndex = 0;
+    }
+
     const canvas = document.getElementById('editor-canvas');
     canvas.classList.remove('has-image');
     editor = new PhotoEditor(canvas);
     resetControls();
+    updateQueueUI();
     openModal('photo-editor-modal');
+
+    if (fileQueue.length) {
+      editor.loadFile(fileQueue[0]).then(syncControls);
+    }
+  }
+
+  function updateQueueUI() {
+    const btn = document.getElementById('editor-upload-btn');
+    const queueLabel = document.getElementById('queue-label');
+    const skipBtn = document.getElementById('editor-skip-btn');
+
+    if (fileQueue.length > 1) {
+      const remaining = fileQueue.length - queueIndex;
+      if (queueLabel) {
+        queueLabel.textContent = `Photo ${queueIndex + 1} of ${fileQueue.length}`;
+        queueLabel.style.display = 'inline';
+      }
+      if (skipBtn) skipBtn.style.display = 'inline-flex';
+      if (btn) btn.textContent = queueIndex < fileQueue.length - 1 ? 'Upload & Next →' : 'Upload & Finish';
+    } else {
+      if (queueLabel) queueLabel.style.display = 'none';
+      if (skipBtn) skipBtn.style.display = 'none';
+      if (btn) btn.textContent = 'Upload & Save Photo';
+    }
   }
 
   async function handleUpload() {
@@ -461,9 +496,27 @@
       currentItem.photos.push(url);
       await savePhotos(null);
 
-      closeModal('photo-editor-modal');
       renderPhotoGrid();
-      api.showToast(`Photo ${photoNum} uploaded and saved!`, 'success');
+      api.showToast(`Photo ${photoNum} uploaded!`, 'success');
+
+      // Advance queue or close
+      queueIndex++;
+      if (fileQueue.length > 1 && queueIndex < fileQueue.length) {
+        // Reset editor for next photo
+        const canvas = document.getElementById('editor-canvas');
+        canvas.classList.remove('has-image');
+        editor = new PhotoEditor(canvas);
+        resetControls();
+        updateQueueUI();
+        editor.loadFile(fileQueue[queueIndex]).then(syncControls);
+      } else {
+        fileQueue = [];
+        queueIndex = 0;
+        closeModal('photo-editor-modal');
+        if (fileQueue.length === 0 && photoNum > 1) {
+          api.showToast('All photos uploaded!', 'success');
+        }
+      }
 
     } catch (ex) {
       window._adminAPI && window._adminAPI.showToast(ex.message, 'error');
@@ -504,13 +557,25 @@
      Init – bind all events
      ================================================================ */
   document.addEventListener('DOMContentLoaded', () => {
-    /* --- File input ----------------------------------------- */
+    /* --- File input (multi) --------------------------------- */
     const fileInput = document.getElementById('photo-file-input');
     if (fileInput) {
       fileInput.addEventListener('change', e => {
-        const file = e.target.files[0];
-        if (file && editor) {
-          editor.loadFile(file).then(syncControls);
+        const files = e.target.files;
+        if (!files || !files.length) return;
+        if (files.length === 1) {
+          // Single file — just load into existing editor
+          if (editor) editor.loadFile(files[0]).then(syncControls);
+        } else {
+          // Multiple files — restart with queue
+          fileQueue = Array.from(files);
+          queueIndex = 0;
+          const canvas = document.getElementById('editor-canvas');
+          canvas.classList.remove('has-image');
+          editor = new PhotoEditor(canvas);
+          resetControls();
+          updateQueueUI();
+          editor.loadFile(fileQueue[0]).then(syncControls);
         }
         fileInput.value = '';
       });
@@ -520,6 +585,26 @@
     document.getElementById('editor-browse-btn').addEventListener('click', () => {
       document.getElementById('photo-file-input').click();
     });
+
+    /* --- Skip button --------------------------------------- */
+    const skipBtn = document.getElementById('editor-skip-btn');
+    if (skipBtn) {
+      skipBtn.addEventListener('click', () => {
+        queueIndex++;
+        if (queueIndex < fileQueue.length) {
+          const canvas = document.getElementById('editor-canvas');
+          canvas.classList.remove('has-image');
+          editor = new PhotoEditor(canvas);
+          resetControls();
+          updateQueueUI();
+          editor.loadFile(fileQueue[queueIndex]).then(syncControls);
+        } else {
+          fileQueue = [];
+          queueIndex = 0;
+          closeModal('photo-editor-modal');
+        }
+      });
+    }
 
     /* --- Rotate -------------------------------------------- */
     document.getElementById('btn-rot-ccw').addEventListener('click', () => {
@@ -580,8 +665,21 @@
     document.getElementById('pe-close-btn').addEventListener('click', () => closeModal('photo-editor-modal'));
     document.getElementById('pe-cancel-btn').addEventListener('click', () => closeModal('photo-editor-modal'));
 
-    /* --- Add photo button ---------------------------------- */
-    document.getElementById('pm-add-photo-btn').addEventListener('click', openPhotoEditor);
+    /* --- Add photo button — open file picker directly ------ */
+    document.getElementById('pm-add-photo-btn').addEventListener('click', () => {
+      const fi = document.getElementById('photo-file-input');
+      fi.value = '';
+      // Temporarily intercept the change event to open the editor with whatever is chosen
+      fi.onchange = (e) => {
+        fi.onchange = null;
+        const files = e.target.files;
+        if (files && files.length) {
+          openPhotoEditor(files);
+        }
+        fi.value = '';
+      };
+      fi.click();
+    });
 
     /* --- Overlay click to close --------------------------- */
     document.getElementById('photo-manager-modal').addEventListener('click', e => {
