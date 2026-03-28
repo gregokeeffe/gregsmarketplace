@@ -60,18 +60,28 @@
       return extra ? `${base} ${extra}` : base;
     }
 
-    loadFile(file) {
-      return new Promise((resolve, reject) => {
-        // Reject unsupported formats early with a clear message
-        const name = (file.name || '').toLowerCase();
-        const type = (file.type || '').toLowerCase();
-        const isHeic = name.endsWith('.heic') || name.endsWith('.heif') ||
-                       type.includes('heic') || type.includes('heif');
-        if (isHeic) {
-          reject(new Error(`"${file.name}" is HEIC format — Chrome can't open it. Convert to JPG first (see tip below).`));
-          return;
-        }
+    async loadFile(file) {
+      // Auto-convert HEIC/HEIF (iPhone photos) to JPEG in-browser
+      const name = (file.name || '').toLowerCase();
+      const type = (file.type || '').toLowerCase();
+      const isHeic = name.endsWith('.heic') || name.endsWith('.heif') ||
+                     type.includes('heic') || type.includes('heif');
 
+      let sourceFile = file;
+      if (isHeic) {
+        if (typeof heic2any === 'undefined') {
+          throw new Error(`"${file.name}" is HEIC — converter not loaded yet. Try again in a moment.`);
+        }
+        try {
+          window._adminAPI && window._adminAPI.showToast(`Converting ${file.name}…`, 'success');
+          const blob = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.92 });
+          sourceFile = new File([blob], file.name.replace(/\.heic$/i, '.jpg'), { type: 'image/jpeg' });
+        } catch (err) {
+          throw new Error(`Could not convert "${file.name}": ${err.message || err}`);
+        }
+      }
+
+      return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = e => {
           const img = new Image();
@@ -82,11 +92,11 @@
             this._fitCover();
             resolve();
           };
-          img.onerror = () => reject(new Error(`"${file.name}" could not be decoded. Try converting it to JPG first.`));
+          img.onerror = () => reject(new Error(`"${file.name}" could not be decoded.`));
           img.src = e.target.result;
         };
         reader.onerror = () => reject(new Error(`Could not read "${file.name}".`));
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(sourceFile);
       });
     }
 
