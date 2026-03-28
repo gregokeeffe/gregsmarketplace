@@ -443,8 +443,6 @@
               <strong>Drag to pan</strong> · Scroll/pinch to zoom · Drop image to load
             </div>
             <div class="editor-file-row" style="margin-top:0.5rem">
-              <input type="file" id="editor-file-input" accept="image/*" multiple style="display:none" aria-label="Browse for photos inside editor">
-              <input type="file" id="pm-file-input" accept="image/*" multiple style="display:none" aria-label="Select photos from Photo Manager">
               <button id="editor-browse-btn" class="btn btn-secondary">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
                 Browse / Select Photo
@@ -552,6 +550,10 @@
       </div>
     </div>
   </div>
+
+  <!-- File inputs live at body level so browsers always trigger the picker -->
+  <input type="file" id="pm-file-input" accept="image/*" multiple style="position:fixed;left:-9999px;opacity:0;pointer-events:none" aria-hidden="true">
+  <input type="file" id="editor-file-input" accept="image/*" multiple style="position:fixed;left:-9999px;opacity:0;pointer-events:none" aria-hidden="true">
 
   <!-- Toast container -->
   <div id="toast-container" class="toast-container" aria-live="assertive" aria-atomic="true"></div>
