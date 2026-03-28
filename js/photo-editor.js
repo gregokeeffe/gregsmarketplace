@@ -238,7 +238,7 @@
       c.addEventListener('wheel', e => {
         e.preventDefault();
         const factor = e.deltaY < 0 ? 1.07 : 0.93;
-        this.zoom = Math.max(0.15, Math.min(12, this.zoom * factor));
+        this.zoom = Math.max(0.05, Math.min(12, this.zoom * factor));
         this.render();
         syncControls();
       }, { passive: false });
@@ -272,7 +272,7 @@
             e.touches[0].clientX - e.touches[1].clientX,
             e.touches[0].clientY - e.touches[1].clientY
           );
-          this.zoom = Math.max(0.15, Math.min(12, this.zoom * (nd / tDist)));
+          this.zoom = Math.max(0.05, Math.min(12, this.zoom * (nd / tDist)));
           tDist = nd;
           this.render();
           syncControls();

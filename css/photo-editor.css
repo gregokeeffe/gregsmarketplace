@@ -211,6 +211,8 @@
   outline: none;
   cursor: pointer;
   accent-color: var(--primary);
+  padding: 0 6px;
+  box-sizing: border-box;
 }
 .ctrl-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
