@@ -166,7 +166,7 @@
         <div class="card-body">
           <div class="card-category">${escHtml(item.category)}</div>
           <div class="card-title">${escHtml(item.title)}</div>
-          <div class="card-condition">${escHtml(item.condition || '')}</div>
+          ${item.condition ? `<div class="card-condition"><span class="condition-label">Condition:</span> ${escHtml(item.condition)}</div>` : ''}
         </div>
         <div class="card-footer">
           ${item.sold

@@ -372,6 +372,7 @@ input, select, textarea { font-family: var(--font); }
   overflow: hidden;
 }
 .card-condition { font-size: 0.78rem; color: var(--text-muted); }
+.condition-label { font-weight: 600; color: var(--text); }
 
 .card-footer {
   display: flex;

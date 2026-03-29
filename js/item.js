@@ -135,7 +135,13 @@
 
     if (catEl) catEl.textContent = item.category;
     if (titleEl) titleEl.textContent = item.title;
-    if (condEl) condEl.textContent = item.condition || '';
+    if (condEl) {
+      if (item.condition) {
+        condEl.innerHTML = `<span class="condition-label">Condition:</span> ${escHtml(item.condition)}`;
+      } else {
+        condEl.textContent = '';
+      }
+    }
 
     if (priceEl) {
       priceEl.textContent = `$${formatPrice(item.price)}`;
