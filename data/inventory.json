@@ -5,18 +5,18 @@
     "paypalMe": "maisondekeeffe",
     "paypalEmail": "",
     "sellerAwayMode": false,
-    "sellerAwayMessage": "I'm currently away and not accepting new purchases. Please check back soon — I'll be back shortly!",
+    "sellerAwayMessage": "I'm currently away and not accepting new purchases. Please check back soon \u00e2\u20ac\u201d I'll be back shortly!",
     "contactEmail": ""
   },
   "items": [
     {
       "id": "orbea-ordu-tt",
       "title": "Orbea Ordu TT Bicycle",
-      "category": "Bicycles",
-      "price": 2500.00,
+      "category": "Bicycles & Parts",
+      "price": 2500.0,
       "condition": "Like New",
       "sellerZip": "06840",
-      "description": "A stunning Orbea Ordu time trial bike in like-new condition. This is a true race-ready TT machine — aerodynamic carbon frameset, integrated cockpit, and all the hallmarks of a high-end triathlon and time trial rig. Minimal wear, all components functioning perfectly. An exceptional opportunity to get into a top-shelf TT bike at a fraction of new pricing.",
+      "description": "A stunning Orbea Ordu time trial bike in like-new condition. This is a true race-ready TT machine \u00e2\u20ac\u201d aerodynamic carbon frameset, integrated cockpit, and all the hallmarks of a high-end triathlon and time trial rig. Minimal wear, all components functioning perfectly. An exceptional opportunity to get into a top-shelf TT bike at a fraction of new pricing.",
       "details": {
         "Brand": "Orbea",
         "Model": "Ordu",
@@ -34,21 +34,24 @@
       },
       "photos": [],
       "sold": false,
-      "crossListings": { "ebay": "", "facebook": "" }
+      "crossListings": {
+        "ebay": "",
+        "facebook": ""
+      }
     },
     {
       "id": "trek-madone-ssl-7symbols",
       "title": "Trek Madone SSL \"7 Symbols\"",
-      "category": "Bicycles",
-      "price": 7500.00,
+      "category": "Bicycles & Parts",
+      "price": 7500.0,
       "condition": "Never Ridden",
       "sellerZip": "34109",
-      "description": "An extraordinarily rare Trek Madone SSL in the legendary \"7 Symbols\" paint scheme — one of Trek's most iconic and collectible limited edition designs. This bike has never been ridden; it is in factory-fresh condition. For the serious Trek collector or the cyclist who wants the absolute pinnacle of road cycling art and engineering. These almost never come up for sale in unridden condition.",
+      "description": "An extraordinarily rare Trek Madone SSL in the legendary \"7 Symbols\" paint scheme \u00e2\u20ac\u201d one of Trek's most iconic and collectible limited edition designs. This bike has never been ridden; it is in factory-fresh condition. For the serious Trek collector or the cyclist who wants the absolute pinnacle of road cycling art and engineering. These almost never come up for sale in unridden condition.",
       "details": {
         "Brand": "Trek",
         "Model": "Madone SSL",
         "Edition": "7 Symbols Limited Edition",
-        "Condition": "Never Ridden – Factory Fresh",
+        "Condition": "Never Ridden \u00e2\u20ac\u201c Factory Fresh",
         "Frame": "OCLV Carbon"
       },
       "shipping": {
@@ -61,16 +64,19 @@
       },
       "photos": [],
       "sold": false,
-      "crossListings": { "ebay": "", "facebook": "" }
+      "crossListings": {
+        "ebay": "",
+        "facebook": ""
+      }
     },
     {
       "id": "trek-madone-69-livestrong",
       "title": "Trek Madone 6.9 Livestrong #1274 Limited Edition",
-      "category": "Bicycles",
-      "price": 4500.00,
+      "category": "Bicycles & Parts",
+      "price": 4500.0,
       "condition": "Excellent",
       "sellerZip": "34109",
-      "description": "A highly collectible Trek Madone 6.9 from the official Livestrong limited edition run, numbered 1274. This bike represents a significant moment in cycling history — the Madone 6.9 was the top-of-the-line Trek race bike of its era, and the Livestrong edition adds a layer of rarity and provenance that makes it genuinely special. In excellent condition with light use. A collector piece that can still be ridden.",
+      "description": "A highly collectible Trek Madone 6.9 from the official Livestrong limited edition run, numbered 1274. This bike represents a significant moment in cycling history \u00e2\u20ac\u201d the Madone 6.9 was the top-of-the-line Trek race bike of its era, and the Livestrong edition adds a layer of rarity and provenance that makes it genuinely special. In excellent condition with light use. A collector piece that can still be ridden.",
       "details": {
         "Brand": "Trek",
         "Model": "Madone 6.9",
@@ -88,16 +94,19 @@
       },
       "photos": [],
       "sold": false,
-      "crossListings": { "ebay": "", "facebook": "" }
+      "crossListings": {
+        "ebay": "",
+        "facebook": ""
+      }
     },
     {
       "id": "trek-madone-59-usps",
       "title": "Trek Madone 5.9 USPS Limited Edition",
-      "category": "Bicycles",
-      "price": 2500.00,
+      "category": "Bicycles & Parts",
+      "price": 2500.0,
       "condition": "Excellent",
       "sellerZip": "34109",
-      "description": "The iconic Trek Madone 5.9 in the coveted USPS team colorway — one of the most recognizable liveries in the history of professional cycling. In excellent condition with light use. This is the bike that defined an era of Tour de France dominance and remains one of the most sought-after collector's road bikes available. A true piece of cycling history.",
+      "description": "The iconic Trek Madone 5.9 in the coveted USPS team colorway \u00e2\u20ac\u201d one of the most recognizable liveries in the history of professional cycling. In excellent condition with light use. This is the bike that defined an era of Tour de France dominance and remains one of the most sought-after collector's road bikes available. A true piece of cycling history.",
       "details": {
         "Brand": "Trek",
         "Model": "Madone 5.9",
@@ -115,16 +124,19 @@
       },
       "photos": [],
       "sold": false,
-      "crossListings": { "ebay": "", "facebook": "" }
+      "crossListings": {
+        "ebay": "",
+        "facebook": ""
+      }
     },
     {
       "id": "colnago-ct2-titanium",
       "title": "Colnago CT2 Titanium Bicycle",
-      "category": "Bicycles",
-      "price": 2000.00,
+      "category": "Bicycles & Parts",
+      "price": 2000.0,
       "condition": "Very Good",
       "sellerZip": "34109",
-      "description": "A beautiful Colnago CT2 with titanium frame — the pinnacle of Italian craftsmanship meeting aerospace-grade materials. Colnago's CT2 is legendary for its ride quality: compliant, smooth, and effortlessly fast. Titanium frames are essentially indestructible and ride better with age. In very good condition with honest use. A lifetime frameset from one of cycling's most storied marques.",
+      "description": "A beautiful Colnago CT2 with titanium frame \u00e2\u20ac\u201d the pinnacle of Italian craftsmanship meeting aerospace-grade materials. Colnago's CT2 is legendary for its ride quality: compliant, smooth, and effortlessly fast. Titanium frames are essentially indestructible and ride better with age. In very good condition with honest use. A lifetime frameset from one of cycling's most storied marques.",
       "details": {
         "Brand": "Colnago",
         "Model": "CT2",
@@ -142,16 +154,19 @@
       },
       "photos": [],
       "sold": false,
-      "crossListings": { "ebay": "", "facebook": "" }
+      "crossListings": {
+        "ebay": "",
+        "facebook": ""
+      }
     },
     {
       "id": "grange-mirrored-armoire",
       "title": "Grange Mirrored Armoire",
-      "category": "Furniture",
-      "price": 750.00,
+      "category": "Furniture & Household Items",
+      "price": 750.0,
       "condition": "Excellent",
       "sellerZip": "06840",
-      "description": "A stunning Grange mirrored armoire in excellent condition. Grange is a premier French furniture maker known for exceptional craftsmanship, solid hardwood construction, and timeless design. This piece commands a room — the mirrored panels add light and depth while the classic French styling works beautifully in traditional, transitional, and contemporary interiors alike. A significant furniture piece at a fraction of retail.",
+      "description": "A stunning Grange mirrored armoire in excellent condition. Grange is a premier French furniture maker known for exceptional craftsmanship, solid hardwood construction, and timeless design. This piece commands a room \u00e2\u20ac\u201d the mirrored panels add light and depth while the classic French styling works beautifully in traditional, transitional, and contemporary interiors alike. A significant furniture piece at a fraction of retail.",
       "details": {
         "Brand": "Grange",
         "Type": "Mirrored Armoire",
@@ -165,20 +180,23 @@
         "packageSize": "freight",
         "estimatedLocalCost": 0,
         "estimatedNationalCost": 350,
-        "notes": "White glove freight delivery available at buyer's expense. Local pickup welcome — please bring appropriate vehicle and help."
+        "notes": "White glove freight delivery available at buyer's expense. Local pickup welcome \u00e2\u20ac\u201d please bring appropriate vehicle and help."
       },
       "photos": [],
       "sold": false,
-      "crossListings": { "ebay": "", "facebook": "" }
+      "crossListings": {
+        "ebay": "",
+        "facebook": ""
+      }
     },
     {
       "id": "diesel-eddy-jacket",
       "title": "Diesel Eddy Leather Jacket",
       "category": "Clothing & Accessories",
-      "price": 200.00,
+      "price": 200.0,
       "condition": "Excellent",
       "sellerZip": "34109",
-      "description": "Diesel's Eddy leather jacket in excellent condition — the quintessential moto-inspired leather jacket done the Diesel way: premium leather, impeccable hardware, and that perfectly worn-in feel right out of the box. No cracking, no significant wear. A classic that never goes out of style.",
+      "description": "Diesel's Eddy leather jacket in excellent condition \u00e2\u20ac\u201d the quintessential moto-inspired leather jacket done the Diesel way: premium leather, impeccable hardware, and that perfectly worn-in feel right out of the box. No cracking, no significant wear. A classic that never goes out of style.",
       "details": {
         "Brand": "Diesel",
         "Model": "Eddy",
@@ -196,13 +214,16 @@
       },
       "photos": [],
       "sold": false,
-      "crossListings": { "ebay": "", "facebook": "" }
+      "crossListings": {
+        "ebay": "",
+        "facebook": ""
+      }
     },
     {
       "id": "grange-china-cabinet",
       "title": "Grange China / Display Cabinet",
-      "category": "Furniture",
-      "price": 600.00,
+      "category": "Furniture & Household Items",
+      "price": 600.0,
       "condition": "Excellent",
       "sellerZip": "02128",
       "description": "A superb Grange china and display cabinet in excellent condition. Like all Grange pieces, this is built from solid hardwood with dovetail joinery and a beautifully applied finish. Glass-front display panels, interior lighting, and adjustable shelving make it as functional as it is elegant. A genuine heirloom-quality piece from one of France's most respected furniture makers.",
@@ -219,20 +240,23 @@
         "packageSize": "freight",
         "estimatedLocalCost": 0,
         "estimatedNationalCost": 0,
-        "notes": "LOCAL PICKUP ONLY – Boston, MA area (02128). Please bring appropriate vehicle and a helper. Happy to assist loading."
+        "notes": "LOCAL PICKUP ONLY \u00e2\u20ac\u201c Boston, MA area (02128). Please bring appropriate vehicle and a helper. Happy to assist loading."
       },
       "photos": [],
       "sold": false,
-      "crossListings": { "ebay": "", "facebook": "" }
+      "crossListings": {
+        "ebay": "",
+        "facebook": ""
+      }
     },
     {
       "id": "cobra-king-forged-one-length",
-      "title": "Cobra King Forged One Length Irons – Left Handed, Stiff Flex",
+      "title": "Cobra King Forged One Length Irons \u00e2\u20ac\u201c Left Handed, Stiff Flex",
       "category": "Misc",
-      "price": 450.00,
+      "price": 450.0,
       "condition": "Like New",
       "sellerZip": "34109",
-      "description": "Cobra King Forged One Length irons in left-handed configuration with stiff flex shafts — an exceptionally rare combination. The One Length concept (pioneered with Bryson DeChambeau) gives every iron the same length as a 7-iron, promoting a single consistent setup and swing. Forged feel with cavity-back forgiveness. Like new condition with minimal bag wear. Left-handed stiff flex sets almost never come up — this is your chance.",
+      "description": "Cobra King Forged One Length irons in left-handed configuration with stiff flex shafts \u00e2\u20ac\u201d an exceptionally rare combination. The One Length concept (pioneered with Bryson DeChambeau) gives every iron the same length as a 7-iron, promoting a single consistent setup and swing. Forged feel with cavity-back forgiveness. Like new condition with minimal bag wear. Left-handed stiff flex sets almost never come up \u00e2\u20ac\u201d this is your chance.",
       "details": {
         "Brand": "Cobra",
         "Model": "King Forged One Length",
@@ -251,16 +275,19 @@
       },
       "photos": [],
       "sold": false,
-      "crossListings": { "ebay": "", "facebook": "" }
+      "crossListings": {
+        "ebay": "",
+        "facebook": ""
+      }
     },
     {
       "id": "cleveland-launcher-driver",
-      "title": "Cleveland Launcher Left Handed Driver – Regular Flex",
+      "title": "Cleveland Launcher Left Handed Driver \u00e2\u20ac\u201c Regular Flex",
       "category": "Misc",
-      "price": 100.00,
+      "price": 100.0,
       "condition": "Excellent",
       "sellerZip": "34109",
-      "description": "Cleveland Launcher driver in left-handed configuration with regular flex shaft. Cleveland's Launcher series is known for high launch, low spin, and genuine forgiveness — a driver that helps golfers of all levels hit it farther and straighter. Left-handed drivers are hard to find in good condition. Excellent shape with light face wear only.",
+      "description": "Cleveland Launcher driver in left-handed configuration with regular flex shaft. Cleveland's Launcher series is known for high launch, low spin, and genuine forgiveness \u00e2\u20ac\u201d a driver that helps golfers of all levels hit it farther and straighter. Left-handed drivers are hard to find in good condition. Excellent shape with light face wear only.",
       "details": {
         "Brand": "Cleveland",
         "Model": "Launcher",
@@ -279,23 +306,26 @@
       },
       "photos": [],
       "sold": false,
-      "crossListings": { "ebay": "", "facebook": "" }
+      "crossListings": {
+        "ebay": "",
+        "facebook": ""
+      }
     },
     {
       "id": "qidi-xmax3-printer",
       "title": "Qidi XMax3 3D Printer + Extras",
       "category": "Misc",
-      "price": 400.00,
+      "price": 400.0,
       "condition": "Very Good",
       "sellerZip": "34109",
-      "description": "Qidi XMax3 large-format 3D printer in very good condition, with extra accessories included. The XMax3 is a workhorse large-format FDM printer with a 325×325×315mm build volume, 600mm/s max print speed, and an enclosed chamber for printing engineering-grade filaments. Includes extras — ask for full list. A serious machine for serious makers at a great price.",
+      "description": "Qidi XMax3 large-format 3D printer in very good condition, with extra accessories included. The XMax3 is a workhorse large-format FDM printer with a 325\u00c3\u2014325\u00c3\u2014315mm build volume, 600mm/s max print speed, and an enclosed chamber for printing engineering-grade filaments. Includes extras \u00e2\u20ac\u201d ask for full list. A serious machine for serious makers at a great price.",
       "details": {
         "Brand": "Qidi",
         "Model": "XMax3",
         "Type": "FDM 3D Printer",
-        "Build Volume": "325 × 325 × 315mm",
+        "Build Volume": "325 \u00c3\u2014 325 \u00c3\u2014 315mm",
         "Max Speed": "600mm/s",
-        "Enclosure": "Yes – suitable for ABS, ASA, PA, PC",
+        "Enclosure": "Yes \u00e2\u20ac\u201c suitable for ABS, ASA, PA, PC",
         "Condition": "Very Good"
       },
       "shipping": {
@@ -308,16 +338,19 @@
       },
       "photos": [],
       "sold": false,
-      "crossListings": { "ebay": "", "facebook": "" }
+      "crossListings": {
+        "ebay": "",
+        "facebook": ""
+      }
     },
     {
       "id": "bontrager-race-x-lite-crankset",
       "title": "Bontrager Race X Lite GXP Carbon Crankset",
-      "category": "Bicycle Parts",
-      "price": 75.00,
+      "category": "Bicycles & Parts",
+      "price": 75.0,
       "condition": "Like New",
       "sellerZip": "34109",
-      "description": "Bontrager Race X Lite GXP carbon crankset in like-new condition. The Race X Lite was Bontrager's top-tier carbon crankset — stiff, light, and beautiful. GXP spindle interface is compatible with SRAM and many other drivetrains. Minimal use, no scratches on the carbon arms, chainrings in excellent shape.",
+      "description": "Bontrager Race X Lite GXP carbon crankset in like-new condition. The Race X Lite was Bontrager's top-tier carbon crankset \u00e2\u20ac\u201d stiff, light, and beautiful. GXP spindle interface is compatible with SRAM and many other drivetrains. Minimal use, no scratches on the carbon arms, chainrings in excellent shape.",
       "details": {
         "Brand": "Bontrager",
         "Model": "Race X Lite",
@@ -335,7 +368,10 @@
       },
       "photos": [],
       "sold": false,
-      "crossListings": { "ebay": "", "facebook": "" }
+      "crossListings": {
+        "ebay": "",
+        "facebook": ""
+      }
     }
   ]
 }

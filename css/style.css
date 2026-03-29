@@ -138,18 +138,16 @@ input, select, textarea { font-family: var(--font); }
 }
 .search-form {
   display: flex;
-  background: rgba(255,255,255,0.15);
-  border: 1px solid rgba(255,255,255,0.25);
+  background: var(--card);
+  border: 1px solid var(--border-dark);
   border-radius: var(--radius-full);
   overflow: hidden;
   transition: background var(--transition);
 }
 .search-form:focus-within {
-  background: #fff;
-  border-color: #fff;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-light);
 }
-.search-form:focus-within .search-input { color: var(--text); }
-.search-form:focus-within .search-btn { color: var(--primary); }
 .search-input {
   flex: 1;
   background: none;
@@ -157,16 +155,15 @@ input, select, textarea { font-family: var(--font); }
   outline: none;
   padding: 0.5rem 1rem;
   font-size: 0.9rem;
-  color: #fff;
+  color: var(--text);
   min-width: 0;
 }
-.search-input::placeholder { color: rgba(255,255,255,0.7); }
-.search-form:focus-within .search-input::placeholder { color: var(--text-light); }
+.search-input::placeholder { color: var(--text-light); }
 .search-btn {
   background: none;
   border: none;
   padding: 0.5rem 0.875rem;
-  color: rgba(255,255,255,0.9);
+  color: var(--text-muted);
   font-size: 1rem;
   display: flex;
   align-items: center;
@@ -247,7 +244,7 @@ input, select, textarea { font-family: var(--font); }
 /* --- Toolbar ---------------------------------------------- */
 .toolbar {
   max-width: var(--max-width);
-  margin: 1.25rem auto 0;
+  margin: 1rem auto 0;
   padding: 0 1rem;
   display: flex;
   align-items: center;
@@ -255,7 +252,8 @@ input, select, textarea { font-family: var(--font); }
   gap: 1rem;
   flex-wrap: wrap;
 }
-.results-info { font-size: 0.875rem; color: var(--text-muted); }
+.toolbar .search-form { flex: 1; max-width: 340px; min-width: 160px; }
+.results-info { font-size: 0.875rem; color: var(--text-muted); flex: 1; }
 .results-info strong { color: var(--text); }
 .sort-select {
   padding: 0.4rem 0.75rem;
@@ -420,12 +418,21 @@ input, select, textarea { font-family: var(--font); }
 /* --- Card cross-listing row -------------------------------- */
 .card-cross {
   display: flex;
+  align-items: center;
   gap: 0.5rem;
   flex-wrap: wrap;
   width: 100%;
   padding-top: 0.4rem;
   border-top: 1px solid var(--border);
   margin-top: 0.1rem;
+}
+.card-cross-label {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
 }
 .card-cross-item {
   display: inline-flex;

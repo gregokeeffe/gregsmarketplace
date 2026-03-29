@@ -4,7 +4,7 @@
 (function () {
   'use strict';
 
-  const CATEGORIES = ['All', 'Bicycles', 'Bicycle Parts', 'Autos & Parts', 'Household Goods', 'Clothing & Accessories', 'Furniture', 'Misc'];
+  const CATEGORIES = ['All', 'Bicycles & Parts', 'Autos & Parts', 'Furniture & Household Items', 'Clothing & Accessories', 'Misc'];
 
   let inventory = null;
   let activeCategory = 'All';
@@ -174,7 +174,7 @@
             : `<span class="card-price">$${formatPrice(item.price)}</span>
                <a href="/item.html?id=${encodeURIComponent(item.id)}" class="view-btn">View</a>`
           }
-          ${crossRows.length ? `<div class="card-cross">${crossRows.join('')}</div>` : ''}
+          ${crossRows.length ? `<div class="card-cross"><span class="card-cross-label">Cross-listed with:</span>${crossRows.join('')}</div>` : ''}
         </div>
       </article>`;
   }

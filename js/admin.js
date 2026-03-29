@@ -4,7 +4,7 @@
 (function () {
   'use strict';
 
-  const CATEGORIES = ['Bicycles', 'Bicycle Parts', 'Autos & Parts', 'Household Goods', 'Clothing & Accessories', 'Furniture', 'Misc'];
+  const CATEGORIES = ['Bicycles & Parts', 'Autos & Parts', 'Furniture & Household Items', 'Clothing & Accessories', 'Misc'];
   const PACKAGE_SIZES = ['small', 'medium', 'large', 'freight'];
 
   let adminToken = sessionStorage.getItem('gm_admin_token') || '';
