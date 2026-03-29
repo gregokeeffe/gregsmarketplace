@@ -114,12 +114,118 @@
     return res.json();
   }
 
+  let inquiryData = null;
+
   async function loadAndRender() {
     inventory = await loadInventory();
     renderStats();
     renderItems();
     renderSettings();
     applyAwayToggle();
+    loadInquiries();
+  }
+
+  async function loadInquiries() {
+    try {
+      const res = await fetch('/api/inquiries', { headers: { 'x-admin-token': adminToken } });
+      if (res.ok) {
+        inquiryData = await res.json();
+        renderInquiries();
+        updateInquiryBadge();
+      }
+    } catch (_) {}
+  }
+
+  function updateInquiryBadge() {
+    const badge = document.getElementById('inquiry-count-badge');
+    if (!badge || !inquiryData) return;
+    const newCount = (inquiryData.inquiries || []).filter(i => i.status === 'new').length;
+    badge.textContent = newCount;
+    badge.style.display = newCount > 0 ? '' : 'none';
+  }
+
+  function renderInquiries() {
+    const list = document.getElementById('inquiries-list');
+    if (!list || !inquiryData) return;
+    const inquiries = inquiryData.inquiries || [];
+
+    if (!inquiries.length) {
+      list.innerHTML = `<div style="text-align:center;padding:3rem;color:var(--text-muted)">No inquiries yet.</div>`;
+      return;
+    }
+
+    const FULFILLMENT_LABELS = { ship: 'Ship', local_pickup: 'Local Pickup', freight: 'Freight' };
+    const PAYMENT_LABELS = { paypal: 'PayPal', venmo: 'Venmo', zelle: 'Zelle', cash: 'Cash' };
+    const REPLY_LABELS = { text: 'Text', call: 'Call', email: 'Email' };
+    const STATUS_CLASS = { new: 'status-available', read: 'status-hidden', responded: 'status-sold' };
+
+    list.innerHTML = inquiries.map(inq => {
+      const date = new Date(inq.submittedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+      return `
+        <div class="inq-card" data-id="${escAttr(inq.id)}">
+          <div class="inq-card-header">
+            <div class="inq-card-meta">
+              <span class="status-badge ${STATUS_CLASS[inq.status] || 'status-hidden'}">${inq.status}</span>
+              <strong>${escHtml(inq.name)}</strong>
+              <span class="inq-card-item">re: ${escHtml(inq.itemTitle)}</span>
+            </div>
+            <div class="inq-card-date">${date}</div>
+          </div>
+          <div class="inq-card-body">
+            <div class="inq-detail-row">
+              <span class="inq-detail-label">Fulfillment</span>
+              <span>${escHtml(FULFILLMENT_LABELS[inq.fulfillment] || inq.fulfillment)}</span>
+            </div>
+            <div class="inq-detail-row">
+              <span class="inq-detail-label">Payment</span>
+              <span>${escHtml(PAYMENT_LABELS[inq.payment] || inq.payment)}</span>
+            </div>
+            <div class="inq-detail-row">
+              <span class="inq-detail-label">Reply via</span>
+              <span>${escHtml(REPLY_LABELS[inq.replyMethod] || inq.replyMethod)} — ${escHtml(inq.contact)}</span>
+            </div>
+            ${inq.pickupTimes ? `<div class="inq-detail-row"><span class="inq-detail-label">Pickup Times</span><span>${escHtml(inq.pickupTimes)}</span></div>` : ''}
+            ${inq.question ? `<div class="inq-detail-row inq-question"><span class="inq-detail-label">Question</span><span>${escHtml(inq.question)}</span></div>` : ''}
+          </div>
+          <div class="inq-card-actions">
+            ${inq.status === 'new' ? `<button class="btn btn-xs btn-secondary mark-read-btn" data-id="${escAttr(inq.id)}">Mark Read</button>` : ''}
+            ${inq.status !== 'responded' ? `<button class="btn btn-xs btn-success mark-responded-btn" data-id="${escAttr(inq.id)}">Mark Responded</button>` : ''}
+            <a href="/item.html?id=${encodeURIComponent(inq.itemId)}" target="_blank" class="btn btn-xs btn-secondary">View Listing ↗</a>
+          </div>
+        </div>`;
+    }).join('');
+
+    bindInquiryActions();
+  }
+
+  function bindInquiryActions() {
+    document.querySelectorAll('.mark-read-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        await updateInquiry(btn.dataset.id, { status: 'read' });
+      });
+    });
+    document.querySelectorAll('.mark-responded-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        await updateInquiry(btn.dataset.id, { status: 'responded' });
+      });
+    });
+  }
+
+  async function updateInquiry(id, patch) {
+    try {
+      const res = await fetch('/api/inquiries', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken },
+        body: JSON.stringify({ id, ...patch }),
+      });
+      if (res.ok) {
+        const inq = (inquiryData.inquiries || []).find(i => i.id === id);
+        if (inq) Object.assign(inq, patch);
+        renderInquiries();
+        updateInquiryBadge();
+        showToast('Inquiry updated', 'success');
+      }
+    } catch (ex) { showToast(ex.message, 'error'); }
   }
 
   /* ---- Navigation ----------------------------------------- */
@@ -195,9 +301,15 @@
       btn.addEventListener('click', () => closeModal(btn.dataset.closeModal));
     });
 
+    // Refresh inquiries
+    const refreshInqBtn = document.getElementById('btn-refresh-inquiries');
+    if (refreshInqBtn) refreshInqBtn.addEventListener('click', loadInquiries);
+
     // Settings form
     document.getElementById('settings-form').addEventListener('submit', saveSettings);
     bindFAQForm();
+    bindAvatarUpload();
+    bindDataTools();
   }
 
   function closeSidebar() {
@@ -245,79 +357,199 @@
       items = items.filter(i => i.title.toLowerCase().includes(q) || i.id.toLowerCase().includes(q));
     }
 
-    const tbody = document.getElementById('items-tbody');
-    if (!tbody) return;
+    const list = document.getElementById('items-list');
+    if (!list) return;
 
     if (items.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text-muted)">No items match your filter.</td></tr>`;
+      list.innerHTML = `<div style="text-align:center;padding:2rem;color:var(--text-muted)">No items match your filter.</div>`;
       return;
     }
 
-    tbody.innerHTML = items.map(item => buildItemRow(item)).join('');
-    bindRowActions();
+    list.innerHTML = items.map(item => buildItemCard(item)).join('');
+    bindCardActions();
   }
 
-  function buildItemRow(item) {
+  function buildItemCard(item) {
     const photo = (item.photos && item.photos.length) ? item.photos[0] : '/images/placeholder.svg';
-    const ebayLink = item.crossListings && item.crossListings.ebay ? `<a href="${escAttr(item.crossListings.ebay)}" target="_blank" title="eBay listing" class="btn btn-xs btn-secondary">eBay</a>` : '';
-    const fbLink = item.crossListings && item.crossListings.facebook ? `<a href="${escAttr(item.crossListings.facebook)}" target="_blank" title="Facebook listing" class="btn btn-xs btn-secondary">FB</a>` : '';
+    const statusClass = item.hidden ? 'status-hidden' : item.sold ? 'status-sold' : 'status-available';
+    const statusLabel = item.hidden ? 'Hidden' : item.sold ? 'Sold' : 'Available';
+    const cl = item.crossListings || {};
+
+    const shippingOptions = [
+      ['', 'Auto-detect'],
+      ['small', '$10 – Small'],
+      ['standard', '$20 – Standard'],
+      ['bicycle', '$250 – Bike Flights'],
+      ['furniture', 'Contact – Freight'],
+    ].map(([v, l]) => `<option value="${v}"${(item.shippingType || '') === v ? ' selected' : ''}>${escHtml(l)}</option>`).join('');
+
+    const categoryOptions = CATEGORIES.map(c =>
+      `<option value="${escAttr(c)}"${c === item.category ? ' selected' : ''}>${escHtml(c)}</option>`
+    ).join('');
+
+    const detailPairsHtml = Object.entries(item.details || {}).map(([k, v]) => `
+      <div class="detail-pair-row">
+        <input class="detail-key-input settings-input" value="${escAttr(k)}" placeholder="Label">
+        <input class="detail-val-input settings-input" value="${escAttr(v)}" placeholder="Value">
+        <div class="detail-row-btns">
+          <button type="button" class="btn btn-xs btn-secondary move-detail-up" title="Move up">▲</button>
+          <button type="button" class="btn btn-xs btn-secondary move-detail-down" title="Move down">▼</button>
+          <button type="button" class="btn btn-xs btn-danger delete-detail-row" title="Remove">✕</button>
+        </div>
+      </div>`).join('');
 
     return `
-      <tr data-id="${escAttr(item.id)}">
-        <td data-label="Item">
-          <div class="item-thumb-cell">
-            <img class="item-thumb" src="${escAttr(photo)}" alt="" onerror="this.src='/images/placeholder.svg'">
-            <div class="item-title-cell">
-              <div class="item-name">${escHtml(item.title)}</div>
-              <div class="item-cat">${escHtml(item.category)}</div>
+      <div class="item-card" data-id="${escAttr(item.id)}">
+        <div class="item-card-header">
+          <img class="item-thumb" src="${escAttr(photo)}" alt="" onerror="this.src='/images/placeholder.svg'">
+          <div class="item-card-info">
+            <div class="item-card-title">${escHtml(item.title)}</div>
+            <div class="item-card-meta">${escHtml(item.category)} · $${formatPrice(item.price)}</div>
+          </div>
+          <span class="status-badge ${statusClass}">${statusLabel}</span>
+          <div class="item-card-quick">
+            <button class="btn btn-xs ${item.sold ? 'btn-success' : 'btn-secondary'} quick-toggle-sold" data-id="${escAttr(item.id)}">${item.sold ? 'Mark Available' : 'Mark Sold'}</button>
+            <button class="btn btn-xs ${item.hidden ? 'btn-warning' : 'btn-secondary'} quick-toggle-hidden" data-id="${escAttr(item.id)}">${item.hidden ? '👁 Show' : '🙈 Hide'}</button>
+            <a href="/item.html?id=${encodeURIComponent(item.id)}" target="_blank" class="btn btn-xs btn-secondary">↗ View</a>
+          </div>
+          <button class="btn btn-sm btn-secondary item-card-expand" data-id="${escAttr(item.id)}">Edit ▾</button>
+        </div>
+        <div class="item-card-body" id="card-body-${escAttr(item.id)}" hidden>
+          <div class="item-edit-grid">
+            <div class="item-edit-section">
+              <h4 class="item-edit-section-title">Basic Info</h4>
+              <div class="item-edit-fields">
+                <div class="item-edit-field">
+                  <label class="settings-label">Title</label>
+                  <input type="text" class="ie-title settings-input" value="${escAttr(item.title)}">
+                </div>
+                <div class="item-edit-row2">
+                  <div class="item-edit-field">
+                    <label class="settings-label">Price ($)</label>
+                    <input type="number" class="ie-price settings-input" value="${escAttr(item.price)}" min="0" step="0.01">
+                  </div>
+                  <div class="item-edit-field">
+                    <label class="settings-label">Item ZIP</label>
+                    <input type="text" class="ie-zip settings-input" value="${escAttr(item.zip || '')}" placeholder="e.g. 80202" maxlength="10">
+                  </div>
+                </div>
+                <div class="item-edit-field">
+                  <label class="settings-label">Condition</label>
+                  <input type="text" class="ie-condition settings-input" value="${escAttr(item.condition || '')}">
+                </div>
+                <div class="item-edit-row2">
+                  <div class="item-edit-field">
+                    <label class="settings-label">Category</label>
+                    <select class="ie-category settings-input">${categoryOptions}</select>
+                  </div>
+                  <div class="item-edit-field">
+                    <label class="settings-label">Shipping</label>
+                    <select class="ie-shipping settings-input">${shippingOptions}</select>
+                  </div>
+                </div>
+                <div class="item-edit-field">
+                  <label class="settings-label">Exact Pickup Address (hidden)</label>
+                  <input type="text" class="ie-pickup-address settings-input" value="${escAttr(item.pickupAddress || '')}" placeholder="123 Main St, Highlands Ranch CO 80129">
+                  <span class="settings-hint">Only shown to buyer after you toggle "Confirmed" below</span>
+                </div>
+                <div class="item-edit-field" style="flex-direction:row;align-items:center;gap:0.6rem">
+                  <button type="button" class="btn btn-sm ${item.pickupConfirmed ? 'btn-success' : 'btn-secondary'} quick-toggle-pickup" data-id="${escAttr(item.id)}" title="Toggle whether exact address is visible to buyer">
+                    ${item.pickupConfirmed ? '📍 Address Confirmed' : '📍 Confirm Address'}
+                  </button>
+                  <span class="settings-hint">${item.pickupConfirmed ? 'Exact address is shown to buyer' : 'Showing approximate area only'}</span>
+                </div>
+              </div>
+            </div>
+            <div>
+              <div class="item-edit-section">
+                <h4 class="item-edit-section-title">Cross-Listings</h4>
+                <div class="item-edit-fields">
+                  <div class="item-edit-field">
+                    <label class="settings-label">eBay URL</label>
+                    <input type="url" class="ie-ebay-url settings-input" value="${escAttr(cl.ebay || '')}" placeholder="https://www.ebay.com/itm/…">
+                  </div>
+                  <div class="item-edit-field">
+                    <label class="settings-label">eBay Price ($)</label>
+                    <input type="number" class="ie-ebay-price settings-input" value="${escAttr(cl.ebayPrice || '')}" min="0" step="0.01">
+                  </div>
+                  <div class="item-edit-field">
+                    <label class="settings-label">Facebook URL</label>
+                    <input type="url" class="ie-fb-url settings-input" value="${escAttr(cl.facebook || '')}" placeholder="https://www.facebook.com/marketplace/…">
+                  </div>
+                  <div class="item-edit-field">
+                    <label class="settings-label">Facebook Price ($)</label>
+                    <input type="number" class="ie-fb-price settings-input" value="${escAttr(cl.facebookPrice || '')}" min="0" step="0.01">
+                  </div>
+                </div>
+              </div>
+              <div class="item-edit-section" style="margin-top:0.75rem">
+                <h4 class="item-edit-section-title">Visibility</h4>
+                <div style="display:flex;flex-wrap:wrap;gap:0.4rem">
+                  <button type="button" class="btn btn-sm ${item.featured ? 'btn-primary' : 'btn-secondary'} quick-toggle-featured" data-id="${escAttr(item.id)}">${item.featured ? '⭐ Featured' : '☆ Feature'}</button>
+                  ${item.sold ? `<button type="button" class="btn btn-sm ${item.showInSold ? 'btn-success' : 'btn-secondary'} quick-toggle-show-sold" data-id="${escAttr(item.id)}">${item.showInSold ? '📋 In Sold tab' : '📋 Add to Sold tab'}</button>` : ''}
+                </div>
+              </div>
             </div>
           </div>
-        </td>
-        <td data-label="ID"><code style="font-size:0.75rem">${escHtml(item.id)}</code></td>
-        <td data-label="Price">
-          <div class="price-cell">
-            <span class="price-display" id="price-display-${escAttr(item.id)}">$${formatPrice(item.price)}</span>
-            <button class="btn btn-xs btn-secondary edit-price-btn" data-id="${escAttr(item.id)}" title="Edit price">✏️</button>
+
+          <div class="item-edit-section item-edit-full">
+            <h4 class="item-edit-section-title">Description</h4>
+            <textarea class="ie-description settings-input settings-textarea" rows="5">${escHtml(item.description || '')}</textarea>
           </div>
-        </td>
-        <td data-label="Status">
-          <span class="status-badge ${item.hidden ? 'status-hidden' : item.sold ? 'status-sold' : 'status-available'}" id="status-badge-${escAttr(item.id)}">
-            ${item.hidden ? 'Hidden' : item.sold ? 'Sold' : 'Available'}
-          </span>
-        </td>
-        <td data-label="Cross-listings">
-          <div class="cross-links-cell" id="cross-cell-${escAttr(item.id)}">
-            <div class="cross-links-display">
-              ${ebayLink}${fbLink}
-              <button class="btn btn-xs btn-secondary edit-cross-btn" data-id="${escAttr(item.id)}" title="Edit cross-listing URLs">✏️</button>
+
+          <div class="item-edit-section item-edit-full">
+            <h4 class="item-edit-section-title">Item Details</h4>
+            <div class="details-pairs-container" id="details-pairs-${escAttr(item.id)}">${detailPairsHtml}</div>
+            <button type="button" class="btn btn-xs btn-secondary add-detail-row" style="margin-top:0.5rem">+ Add Row</button>
+          </div>
+
+          <div class="item-edit-footer">
+            <div style="display:flex;gap:0.5rem;align-items:center">
+              <button type="button" class="btn btn-primary save-item-btn" data-id="${escAttr(item.id)}">Save Changes</button>
+              <button type="button" class="btn btn-secondary photos-btn" data-id="${escAttr(item.id)}">📸 Photos${item.photos && item.photos.length ? ` (${item.photos.length})` : ''}</button>
             </div>
+            <button type="button" class="btn btn-danger delete-item-btn" data-id="${escAttr(item.id)}">🗑 Delete</button>
           </div>
-        </td>
-        <td data-label="Actions">
-          <div class="actions-cell">
-            <button class="btn btn-xs btn-secondary photos-btn" data-id="${escAttr(item.id)}" title="Manage photos">
-              📸 Photos${item.photos && item.photos.length ? ` (${item.photos.length})` : ''}
-            </button>
-            <button class="btn btn-xs btn-secondary edit-desc-btn" data-id="${escAttr(item.id)}" title="Edit description">✏️ Desc</button>
-            <button class="btn btn-xs ${item.sold ? 'btn-success' : 'btn-secondary'} toggle-sold-btn" data-id="${escAttr(item.id)}">
-              ${item.sold ? 'Mark Available' : 'Mark Sold'}
-            </button>
-            <button class="btn btn-xs ${item.hidden ? 'btn-warning' : 'btn-secondary'} toggle-hidden-btn" data-id="${escAttr(item.id)}" title="${item.hidden ? 'Show on site' : 'Hide from site'}">
-              ${item.hidden ? '👁 Show' : '🙈 Hide'}
-            </button>
-            <button class="btn btn-xs ${item.featured ? 'btn-primary' : 'btn-secondary'} toggle-featured-btn" data-id="${escAttr(item.id)}" title="${item.featured ? 'Remove featured' : 'Mark as featured'}">
-              ${item.featured ? '⭐ Featured' : '☆ Feature'}
-            </button>
-            <a href="/item.html?id=${encodeURIComponent(item.id)}" target="_blank" class="btn btn-xs btn-secondary" title="View listing">👁</a>
-            <button class="btn btn-xs btn-danger delete-item-btn" data-id="${escAttr(item.id)}" title="Delete">🗑</button>
-          </div>
-        </td>
-      </tr>`;
+        </div>
+      </div>`;
   }
 
-  function bindRowActions() {
-    // Toggle sold
-    document.querySelectorAll('.toggle-sold-btn').forEach(btn => {
+  function bindDetailRowBtns(container) {
+    container.querySelectorAll('.delete-detail-row').forEach(btn => {
+      btn.onclick = () => btn.closest('.detail-pair-row').remove();
+    });
+    container.querySelectorAll('.move-detail-up').forEach(btn => {
+      btn.onclick = () => {
+        const row = btn.closest('.detail-pair-row');
+        const prev = row.previousElementSibling;
+        if (prev) container.insertBefore(row, prev);
+      };
+    });
+    container.querySelectorAll('.move-detail-down').forEach(btn => {
+      btn.onclick = () => {
+        const row = btn.closest('.detail-pair-row');
+        const next = row.nextElementSibling;
+        if (next) container.insertBefore(next, row);
+      };
+    });
+  }
+
+  function bindCardActions() {
+    // Expand / collapse
+    document.querySelectorAll('.item-card-expand').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const id = btn.dataset.id;
+        const body = document.getElementById('card-body-' + id);
+        if (!body) return;
+        const isOpen = !body.hidden;
+        body.hidden = isOpen;
+        btn.textContent = isOpen ? 'Edit ▾' : 'Close ▴';
+      });
+    });
+
+    // Quick toggle sold
+    document.querySelectorAll('.quick-toggle-sold').forEach(btn => {
       btn.addEventListener('click', async () => {
         const id = btn.dataset.id;
         const item = inventory.items.find(i => i.id === id);
@@ -330,167 +562,14 @@
           renderStats();
           showToast(item.sold ? `Marked "${item.title}" as sold` : `Marked "${item.title}" as available`, 'success');
         } catch (ex) {
-          item.sold = !item.sold; // revert
+          item.sold = !item.sold;
           showToast(ex.message, 'error');
         }
       });
     });
 
-    // Edit price
-    document.querySelectorAll('.edit-price-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const id = btn.dataset.id;
-        const item = inventory.items.find(i => i.id === id);
-        if (!item) return;
-        const cell = btn.closest('td');
-        const displayEl = document.getElementById('price-display-' + id);
-
-        displayEl.style.display = 'none';
-        btn.style.display = 'none';
-
-        const input = document.createElement('input');
-        input.type = 'number';
-        input.min = '0';
-        input.step = '0.01';
-        input.value = item.price;
-        input.className = 'price-edit-input';
-        input.id = 'price-input-' + id;
-
-        const saveBtn = document.createElement('button');
-        saveBtn.className = 'btn btn-xs btn-success save-price-btn';
-        saveBtn.textContent = '✓';
-
-        const cancelBtn = document.createElement('button');
-        cancelBtn.className = 'btn btn-xs btn-secondary cancel-price-btn';
-        cancelBtn.textContent = '✕';
-
-        const priceCell = cell.querySelector('.price-cell');
-        priceCell.appendChild(input);
-        priceCell.appendChild(saveBtn);
-        priceCell.appendChild(cancelBtn);
-        input.focus();
-        input.select();
-
-        const finish = () => {
-          input.remove(); saveBtn.remove(); cancelBtn.remove();
-          displayEl.style.display = '';
-          btn.style.display = '';
-        };
-
-        saveBtn.addEventListener('click', async () => {
-          const newPrice = parseFloat(input.value);
-          if (isNaN(newPrice) || newPrice < 0) { showToast('Invalid price', 'error'); return; }
-          const oldPrice = item.price;
-          item.price = newPrice;
-          saveBtn.disabled = true;
-          try {
-            await saveInventory(inventory);
-            displayEl.textContent = '$' + formatPrice(newPrice);
-            finish();
-            renderStats();
-            showToast(`Price updated to $${formatPrice(newPrice)}`, 'success');
-          } catch (ex) {
-            item.price = oldPrice;
-            showToast(ex.message, 'error');
-            finish();
-          }
-        });
-
-        cancelBtn.addEventListener('click', finish);
-        input.addEventListener('keydown', e => {
-          if (e.key === 'Enter') saveBtn.click();
-          if (e.key === 'Escape') cancelBtn.click();
-        });
-      });
-    });
-
-    // Edit cross-listing URLs
-    document.querySelectorAll('.edit-cross-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const id = btn.dataset.id;
-        const item = inventory.items.find(i => i.id === id);
-        if (!item) return;
-        const cell = document.getElementById('cross-cell-' + id);
-        if (!cell) return;
-
-        const cl = item.crossListings || {};
-
-        cell.innerHTML = `
-          <div class="cross-links-edit" style="display:flex;flex-direction:column;gap:0.5rem;min-width:260px">
-            <div style="font-size:0.72rem;font-weight:700;color:var(--text-muted);padding-bottom:0.2rem;border-bottom:1px solid var(--border)">
-              eBay
-            </div>
-            <div style="display:flex;gap:0.4rem">
-              <input type="url" class="admin-search-input" id="ebay-url-${escAttr(id)}"
-                placeholder="eBay listing URL" value="${escAttr(cl.ebay || '')}"
-                style="font-size:0.75rem;padding:0.3rem 0.5rem;flex:1">
-              <input type="number" class="admin-search-input" id="ebay-price-${escAttr(id)}"
-                placeholder="Price $" value="${escAttr(cl.ebayPrice ? cl.ebayPrice : '')}" min="0" step="0.01"
-                style="font-size:0.75rem;padding:0.3rem 0.5rem;width:80px">
-            </div>
-            <div style="font-size:0.72rem;font-weight:700;color:var(--text-muted);padding-bottom:0.2rem;border-bottom:1px solid var(--border)">
-              Facebook Marketplace
-            </div>
-            <div style="display:flex;gap:0.4rem">
-              <input type="url" class="admin-search-input" id="fb-url-${escAttr(id)}"
-                placeholder="Facebook Marketplace URL" value="${escAttr(cl.facebook || '')}"
-                style="font-size:0.75rem;padding:0.3rem 0.5rem;flex:1">
-              <input type="number" class="admin-search-input" id="fb-price-${escAttr(id)}"
-                placeholder="Price $" value="${escAttr(cl.facebookPrice ? cl.facebookPrice : '')}" min="0" step="0.01"
-                style="font-size:0.75rem;padding:0.3rem 0.5rem;width:80px">
-            </div>
-            <div style="display:flex;gap:0.4rem">
-              <button class="btn btn-xs btn-primary save-cross-btn" data-id="${escAttr(id)}">Save</button>
-              <button class="btn btn-xs btn-secondary cancel-cross-btn" data-id="${escAttr(id)}">Cancel</button>
-            </div>
-          </div>`;
-
-        cell.querySelector('.save-cross-btn').addEventListener('click', async () => {
-          const ebay       = document.getElementById('ebay-url-'   + id).value.trim();
-          const ebayPrice  = parseFloat(document.getElementById('ebay-price-' + id).value) || null;
-          const fb         = document.getElementById('fb-url-'     + id).value.trim();
-          const fbPrice    = parseFloat(document.getElementById('fb-price-'   + id).value) || null;
-          if (!item.crossListings) item.crossListings = {};
-          item.crossListings.ebay           = ebay;
-          item.crossListings.ebayPrice      = ebayPrice;
-          item.crossListings.facebook       = fb;
-          item.crossListings.facebookPrice  = fbPrice;
-          try {
-            await saveInventory(inventory);
-            renderItems();
-            showToast('Cross-listing links saved', 'success');
-          } catch (ex) {
-            showToast(ex.message, 'error');
-          }
-        });
-
-        cell.querySelector('.cancel-cross-btn').addEventListener('click', () => {
-          renderItems();
-        });
-      });
-    });
-
-    // Toggle featured
-    document.querySelectorAll('.toggle-featured-btn').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const id = btn.dataset.id;
-        const item = inventory.items.find(i => i.id === id);
-        if (!item) return;
-        item.featured = !item.featured;
-        btn.disabled = true;
-        try {
-          await saveInventory(inventory);
-          renderItems();
-          showToast(item.featured ? `"${item.title}" marked as featured` : `"${item.title}" removed from featured`, 'success');
-        } catch (ex) {
-          item.featured = !item.featured;
-          showToast(ex.message, 'error');
-        }
-      });
-    });
-
-    // Toggle hidden
-    document.querySelectorAll('.toggle-hidden-btn').forEach(btn => {
+    // Quick toggle hidden
+    document.querySelectorAll('.quick-toggle-hidden').forEach(btn => {
       btn.addEventListener('click', async () => {
         const id = btn.dataset.id;
         const item = inventory.items.find(i => i.id === id);
@@ -509,63 +588,139 @@
       });
     });
 
-    // Edit description
-    document.querySelectorAll('.edit-desc-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
+    // Quick toggle featured
+    document.querySelectorAll('.quick-toggle-featured').forEach(btn => {
+      btn.addEventListener('click', async () => {
         const id = btn.dataset.id;
         const item = inventory.items.find(i => i.id === id);
         if (!item) return;
-        const row = btn.closest('tr');
-        if (!row) return;
+        item.featured = !item.featured;
+        btn.disabled = true;
+        try {
+          await saveInventory(inventory);
+          renderItems();
+          showToast(item.featured ? `"${item.title}" marked as featured` : `"${item.title}" removed from featured`, 'success');
+        } catch (ex) {
+          item.featured = !item.featured;
+          showToast(ex.message, 'error');
+        }
+      });
+    });
 
-        // Expand a full-width row below this one
-        const existingExpanded = document.getElementById('desc-row-' + id);
-        if (existingExpanded) { existingExpanded.remove(); return; }
+    // Quick toggle showInSold
+    document.querySelectorAll('.quick-toggle-show-sold').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.id;
+        const item = inventory.items.find(i => i.id === id);
+        if (!item) return;
+        item.showInSold = !item.showInSold;
+        btn.disabled = true;
+        try {
+          await saveInventory(inventory);
+          renderItems();
+          showToast(item.showInSold ? `"${item.title}" will appear in Sold tab` : `"${item.title}" removed from Sold tab`, 'success');
+        } catch (ex) {
+          item.showInSold = !item.showInSold;
+          showToast(ex.message, 'error');
+        }
+      });
+    });
 
-        const colCount = row.cells.length;
-        const expandRow = document.createElement('tr');
-        expandRow.id = 'desc-row-' + id;
-        expandRow.innerHTML = `
-          <td colspan="${colCount}" style="padding:0.75rem 1rem;background:var(--bg);border-top:none">
-            <div style="display:flex;flex-direction:column;gap:0.5rem">
-              <label style="font-size:0.75rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em">
-                Description — ${escHtml(item.title)}
-              </label>
-              <textarea id="desc-textarea-${escAttr(id)}" rows="5"
-                style="width:100%;padding:0.5rem 0.75rem;border:1.5px solid var(--border-dark);border-radius:var(--radius);font-size:0.875rem;line-height:1.6;resize:vertical;font-family:var(--font)"
-              >${escHtml(item.description || '')}</textarea>
-              <div style="display:flex;gap:0.5rem">
-                <button class="btn btn-xs btn-primary save-desc-btn" data-id="${escAttr(id)}">Save</button>
-                <button class="btn btn-xs btn-secondary cancel-desc-btn" data-id="${escAttr(id)}">Cancel</button>
-              </div>
-            </div>
-          </td>`;
-        row.after(expandRow);
+    // Pickup address confirmed toggle
+    document.querySelectorAll('.quick-toggle-pickup').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.id;
+        const item = inventory.items.find(i => i.id === id);
+        if (!item) return;
+        item.pickupConfirmed = !item.pickupConfirmed;
+        btn.disabled = true;
+        try {
+          await saveInventory(inventory);
+          renderItems();
+          showToast(item.pickupConfirmed ? 'Exact pickup address is now visible to buyers' : 'Showing approximate area only', item.pickupConfirmed ? 'success' : 'warning');
+        } catch (ex) {
+          item.pickupConfirmed = !item.pickupConfirmed;
+          showToast(ex.message, 'error');
+        }
+      });
+    });
 
-        const textarea = document.getElementById('desc-textarea-' + id);
-        textarea.focus();
+    // Add detail row
+    document.querySelectorAll('.add-detail-row').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const card = btn.closest('.item-card');
+        if (!card) return;
+        const id = card.dataset.id;
+        const container = document.getElementById('details-pairs-' + id);
+        if (!container) return;
+        const row = document.createElement('div');
+        row.className = 'detail-pair-row';
+        row.innerHTML = `
+          <input class="detail-key-input settings-input" value="" placeholder="Label">
+          <input class="detail-val-input settings-input" value="" placeholder="Value">
+          <button type="button" class="btn btn-xs btn-danger delete-detail-row">✕</button>`;
+        container.appendChild(row);
+        bindDetailRowBtns(container);
+        row.querySelector('.detail-key-input').focus();
+      });
+    });
 
-        expandRow.querySelector('.save-desc-btn').addEventListener('click', async () => {
-          const newDesc = textarea.value.trim();
-          const oldDesc = item.description;
-          item.description = newDesc;
-          try {
-            await saveInventory(inventory);
-            expandRow.remove();
-            showToast('Description saved', 'success');
-          } catch (ex) {
-            item.description = oldDesc;
-            showToast(ex.message, 'error');
-          }
+    // Detail delete buttons
+    document.querySelectorAll('.details-pairs-container').forEach(container => {
+      bindDetailRowBtns(container);
+    });
+
+    // Save all fields for an item
+    document.querySelectorAll('.save-item-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.id;
+        const item = inventory.items.find(i => i.id === id);
+        if (!item) return;
+        const body = document.getElementById('card-body-' + id);
+        if (!body) return;
+
+        const titleVal = body.querySelector('.ie-title').value.trim();
+        if (!titleVal) { showToast('Title cannot be empty', 'error'); return; }
+
+        const oldSnapshot = JSON.parse(JSON.stringify(item));
+
+        item.title          = titleVal;
+        item.price          = parseFloat(body.querySelector('.ie-price').value) || item.price;
+        item.condition      = body.querySelector('.ie-condition').value.trim();
+        item.category       = body.querySelector('.ie-category').value;
+        item.zip            = body.querySelector('.ie-zip').value.trim() || null;
+        item.shippingType   = body.querySelector('.ie-shipping').value || null;
+        item.description    = body.querySelector('.ie-description').value.trim();
+        item.pickupAddress  = body.querySelector('.ie-pickup-address').value.trim() || null;
+
+        const ebayUrl   = body.querySelector('.ie-ebay-url').value.trim();
+        const ebayPrice = parseFloat(body.querySelector('.ie-ebay-price').value) || null;
+        const fbUrl     = body.querySelector('.ie-fb-url').value.trim();
+        const fbPrice   = parseFloat(body.querySelector('.ie-fb-price').value) || null;
+        item.crossListings = { ebay: ebayUrl, ebayPrice, facebook: fbUrl, facebookPrice: fbPrice };
+
+        const pairsContainer = document.getElementById('details-pairs-' + id);
+        const newDetails = {};
+        pairsContainer.querySelectorAll('.detail-pair-row').forEach(row => {
+          const k = row.querySelector('.detail-key-input').value.trim();
+          const v = row.querySelector('.detail-val-input').value.trim();
+          if (k) newDetails[k] = v;
         });
+        item.details = newDetails;
 
-        expandRow.querySelector('.cancel-desc-btn').addEventListener('click', () => {
-          expandRow.remove();
-        });
-
-        textarea.addEventListener('keydown', e => {
-          if (e.key === 'Escape') expandRow.remove();
-        });
+        btn.disabled = true;
+        btn.textContent = 'Saving…';
+        try {
+          await saveInventory(inventory);
+          renderItems();
+          renderStats();
+          showToast(`"${item.title}" saved`, 'success');
+        } catch (ex) {
+          Object.assign(item, oldSnapshot);
+          showToast(ex.message, 'error');
+          btn.disabled = false;
+          btn.textContent = 'Save Changes';
+        }
       });
     });
 
@@ -618,14 +773,7 @@
       condition: f.condition.value.trim(),
       description: f.description.value.trim(),
       details: {},
-      shipping: {
-        available: f.shipping_available.checked,
-        localPickup: f.local_pickup.checked,
-        packageSize: f.package_size.value,
-        estimatedLocalCost: parseFloat(f.local_cost.value) || 0,
-        estimatedNationalCost: parseFloat(f.national_cost.value) || 0,
-        notes: f.shipping_notes.value.trim()
-      },
+      shippingType: f.shippingType.value || null,
       photos: photosRaw ? photosRaw.split('\n').map(s => s.trim()).filter(Boolean) : [],
       sold: false,
       crossListings: {
@@ -665,9 +813,12 @@
     setValue('s-paypal-email', s.paypalEmail || '');
     setValue('s-contact-email', s.contactEmail || '');
     setValue('s-away-message', s.sellerAwayMessage || '');
+    setValue('s-ebay-profile', s.ebayProfileUrl || '');
+    setValue('s-facebook-profile', s.facebookProfileUrl || '');
     setValue('s-hero-title', s.heroTitle || '');
     setValue('s-hero-subtitle', s.heroSubtitle || '');
     setValue('s-about', s.about || '');
+    renderAvatarPreview(s.avatarUrl || '');
     renderFAQs();
   }
 
@@ -680,6 +831,8 @@
     s.paypalEmail = document.getElementById('s-paypal-email').value.trim();
     s.contactEmail = document.getElementById('s-contact-email').value.trim();
     s.sellerAwayMessage = document.getElementById('s-away-message').value.trim();
+    s.ebayProfileUrl = document.getElementById('s-ebay-profile').value.trim();
+    s.facebookProfileUrl = document.getElementById('s-facebook-profile').value.trim();
     s.heroTitle = document.getElementById('s-hero-title').value.trim();
     s.heroSubtitle = document.getElementById('s-hero-subtitle').value.trim();
     s.about = document.getElementById('s-about').value.trim();
@@ -746,6 +899,120 @@
       } catch (ex) {
         inventory.settings.faqs.pop();
         showToast(ex.message, 'error');
+      }
+    });
+  }
+
+  function renderAvatarPreview(url) {
+    const img = document.getElementById('admin-avatar-img');
+    const initials = document.getElementById('admin-avatar-initials');
+    if (!img) return;
+    if (url) {
+      img.src = url;
+      img.style.display = '';
+      if (initials) initials.style.display = 'none';
+    } else {
+      img.style.display = 'none';
+      if (initials) initials.style.display = '';
+    }
+  }
+
+  function bindAvatarUpload() {
+    const btn = document.getElementById('btn-upload-avatar');
+    const fileInput = document.getElementById('avatar-file-input');
+    const status = document.getElementById('avatar-upload-status');
+    if (!btn || !fileInput) return;
+
+    btn.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', async () => {
+      const file = fileInput.files[0];
+      if (!file) return;
+      fileInput.value = '';
+      status.textContent = 'Processing…';
+      status.style.color = '#64748b';
+
+      try {
+        // Resize to 300x300 square crop via canvas
+        const base64 = await resizeAvatarToBase64(file, 300);
+
+        status.textContent = 'Uploading…';
+        const res = await fetch('/api/upload-image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken },
+          body: JSON.stringify({ imageData: base64, key: 'avatar/1.jpg' }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Upload failed');
+
+        // Bust cache with timestamp
+        const url = data.url + '?v=' + Date.now();
+        inventory.settings.avatarUrl = url;
+        await saveInventory(inventory);
+        renderAvatarPreview(url);
+        status.textContent = 'Photo saved!';
+        status.style.color = '#16a34a';
+      } catch (err) {
+        status.textContent = err.message;
+        status.style.color = '#dc2626';
+      }
+    });
+  }
+
+  function resizeAvatarToBase64(file, size) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = reject;
+      reader.onload = e => {
+        const img = new Image();
+        img.onerror = reject;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = size;
+          canvas.height = size;
+          const ctx = canvas.getContext('2d');
+          // Center-crop to square
+          const side = Math.min(img.width, img.height);
+          const sx = (img.width - side) / 2;
+          const sy = (img.height - side) / 2;
+          ctx.drawImage(img, sx, sy, side, side, 0, 0, size, size);
+          resolve(canvas.toDataURL('image/jpeg', 0.88));
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function bindDataTools() {
+    const btn = document.getElementById('btn-migrate-categories');
+    const status = document.getElementById('migrate-status');
+    if (!btn) return;
+    btn.addEventListener('click', async () => {
+      btn.disabled = true;
+      status.textContent = 'Running…';
+      try {
+        const res = await fetch('/api/migrate-categories', {
+          method: 'POST',
+          headers: { 'x-admin-token': adminToken },
+        });
+        const data = await res.json();
+        if (res.ok) {
+          status.textContent = data.message || 'Done';
+          status.style.color = '#16a34a';
+          // Reload inventory to reflect changes
+          inventory = await loadInventory();
+          renderItems();
+          showToast('Categories migrated — reload the homepage to verify.', 'success');
+        } else {
+          status.textContent = data.error || 'Error';
+          status.style.color = '#dc2626';
+        }
+      } catch (err) {
+        status.textContent = err.message;
+        status.style.color = '#dc2626';
+      } finally {
+        btn.disabled = false;
       }
     });
   }

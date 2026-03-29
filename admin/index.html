@@ -67,6 +67,13 @@
           <span class="nav-badge" id="sold-count-badge">0</span>
         </button>
 
+        <div class="nav-section-label">Buyers</div>
+        <button class="nav-item" data-section="inquiries">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          <span>Inquiries</span>
+          <span class="nav-badge" id="inquiry-count-badge" style="display:none">0</span>
+        </button>
+
         <div class="nav-section-label">Store</div>
         <button class="nav-item" data-section="settings">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
@@ -180,22 +187,19 @@
             </select>
           </div>
 
-          <div class="items-table-wrap">
-            <table class="items-table" aria-label="Inventory items">
-              <thead>
-                <tr>
-                  <th>Item</th>
-                  <th>ID</th>
-                  <th>Price</th>
-                  <th>Status</th>
-                  <th>Cross-listings</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="items-tbody">
-                <tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text-muted)">Loading…</td></tr>
-              </tbody>
-            </table>
+          <div id="items-list" class="items-accordion-list">
+            <div style="text-align:center;padding:2rem;color:var(--text-muted)">Loading…</div>
+          </div>
+        </section>
+
+        <!-- ===== Inquiries ================================== -->
+        <section class="admin-section" id="section-inquiries">
+          <div class="section-header">
+            <h2 class="section-title">Inquiries</h2>
+            <button class="btn btn-secondary btn-sm" id="btn-refresh-inquiries">↻ Refresh</button>
+          </div>
+          <div id="inquiries-list">
+            <div style="text-align:center;padding:2rem;color:var(--text-muted)">Loading…</div>
           </div>
         </section>
 
@@ -219,13 +223,21 @@
                     <input type="text" class="settings-input" id="s-site-name" placeholder="Greg's Marketplace">
                   </div>
                   <div class="settings-field">
-                    <label class="settings-label" for="s-seller-zip">Your ZIP Code</label>
-                    <input type="text" class="settings-input" id="s-seller-zip" placeholder="80202" maxlength="5" inputmode="numeric">
-                    <span class="settings-hint">Used for shipping estimates</span>
+                    <label class="settings-label" for="s-seller-zip">Default Item ZIP</label>
+                    <input type="text" class="settings-input" id="s-seller-zip" placeholder="80202" maxlength="10" inputmode="numeric">
+                    <span class="settings-hint">Fallback ZIP if no item-specific ZIP is set</span>
                   </div>
                   <div class="settings-field">
                     <label class="settings-label" for="s-contact-email">Contact Email (optional)</label>
                     <input type="email" class="settings-input" id="s-contact-email" placeholder="you@example.com">
+                  </div>
+                  <div class="settings-field">
+                    <label class="settings-label" for="s-ebay-profile">eBay Store / Profile URL</label>
+                    <input type="url" class="settings-input" id="s-ebay-profile" placeholder="https://www.ebay.com/usr/yourusername">
+                  </div>
+                  <div class="settings-field">
+                    <label class="settings-label" for="s-facebook-profile">Facebook Marketplace Profile URL</label>
+                    <input type="url" class="settings-input" id="s-facebook-profile" placeholder="https://www.facebook.com/marketplace/profile/...">
                   </div>
                 </div>
               </div>
@@ -268,6 +280,21 @@
                     <label class="settings-label" for="s-about">About Me / Seller Bio</label>
                     <textarea class="settings-input settings-textarea" id="s-about" rows="4" placeholder="Tell buyers a bit about yourself and why you're selling…"></textarea>
                     <span class="settings-hint">Shown at the bottom of the homepage when filled in</span>
+                  </div>
+                  <div class="settings-field">
+                    <label class="settings-label">Profile Photo</label>
+                    <div style="display:flex;align-items:center;gap:1rem;margin-bottom:0.4rem">
+                      <div class="logo-avatar" id="admin-avatar-preview" style="width:52px;height:52px;border:2px solid #e2e8f0;flex-shrink:0">
+                        <img id="admin-avatar-img" src="" alt="Avatar preview" class="logo-avatar-img" style="display:none">
+                        <span class="logo-avatar-fallback" id="admin-avatar-initials">GO</span>
+                      </div>
+                      <div>
+                        <button type="button" class="btn btn-secondary btn-sm" id="btn-upload-avatar">Upload Photo</button>
+                        <input type="file" id="avatar-file-input" accept="image/*" style="display:none">
+                        <p class="settings-hint" style="margin-top:0.3rem">JPEG, PNG, or HEIC · will be cropped to a circle</p>
+                      </div>
+                    </div>
+                    <span id="avatar-upload-status" style="font-size:0.85rem;color:#64748b"></span>
                   </div>
                 </div>
               </div>
@@ -324,6 +351,19 @@
                   </div>
                 </div>
               </form>
+            </div>
+          </div>
+
+          <!-- Data Tools -->
+          <div style="margin-top:1.5rem">
+            <div class="settings-card">
+              <div class="settings-card-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" y1="19" x2="19" y2="13"/><line x1="16" y1="16" x2="20" y2="20"/></svg>
+                Data Tools
+              </div>
+              <p style="font-size:0.85rem;color:#64748b;margin:0 0 0.75rem">One-time utilities — use when needed.</p>
+              <button id="btn-migrate-categories" class="btn btn-secondary btn-sm">Fix Legacy Categories</button>
+              <span id="migrate-status" style="margin-left:0.75rem;font-size:0.85rem;color:#64748b"></span>
             </div>
           </div>
         </section>
@@ -384,46 +424,16 @@
               <span style="font-size:0.78rem;color:var(--text-muted)">Add images to /images/items/item-id/ in your repo, then reference as /images/items/item-id/1.jpg</span>
             </div>
 
-            <fieldset style="border:1px solid var(--border);border-radius:var(--radius);padding:1rem">
-              <legend style="font-size:0.875rem;font-weight:600;padding:0 0.5rem">Shipping</legend>
-              <div class="form-row" style="margin-top:0.75rem">
-                <div class="form-group">
-                  <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;font-size:0.875rem">
-                    <input type="checkbox" id="f-shipping" name="shipping_available" checked> Shipping available
-                  </label>
-                </div>
-                <div class="form-group">
-                  <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;font-size:0.875rem">
-                    <input type="checkbox" id="f-pickup" name="local_pickup" checked> Local pickup
-                  </label>
-                </div>
-              </div>
-              <div class="form-row">
-                <div class="form-group">
-                  <label class="form-label" for="f-pkg">Package Size</label>
-                  <select class="form-input" id="f-pkg" name="package_size">
-                    <option value="small">Small (envelope)</option>
-                    <option value="medium" selected>Medium (box)</option>
-                    <option value="large">Large (big box)</option>
-                    <option value="freight">Freight (bike/furniture)</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label class="form-label" for="f-local-cost">Est. Local Ship ($)</label>
-                  <input type="number" class="form-input" id="f-local-cost" name="local_cost" min="0" step="0.01" value="0">
-                </div>
-              </div>
-              <div class="form-row">
-                <div class="form-group">
-                  <label class="form-label" for="f-national-cost">Est. National Ship ($)</label>
-                  <input type="number" class="form-input" id="f-national-cost" name="national_cost" min="0" step="0.01" value="0">
-                </div>
-                <div class="form-group">
-                  <label class="form-label" for="f-ship-notes">Shipping Notes</label>
-                  <input type="text" class="form-input" id="f-ship-notes" name="shipping_notes" placeholder="Any special notes">
-                </div>
-              </div>
-            </fieldset>
+            <div class="form-group">
+              <label class="form-label" for="f-shipping-type">Shipping</label>
+              <select class="form-input" id="f-shipping-type" name="shippingType">
+                <option value="">Auto-detect from category</option>
+                <option value="small">Small item — $10 flat rate</option>
+                <option value="standard">Standard — $20 flat rate</option>
+                <option value="bicycle">Bicycle — $250 via Bike Flights</option>
+                <option value="furniture">Furniture — Contact for pickup / freight</option>
+              </select>
+            </div>
 
             <fieldset style="border:1px solid var(--border);border-radius:var(--radius);padding:1rem">
               <legend style="font-size:0.875rem;font-weight:600;padding:0 0.5rem">Cross-Listings (optional)</legend>

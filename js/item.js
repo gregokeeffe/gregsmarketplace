@@ -12,12 +12,14 @@
   document.addEventListener('DOMContentLoaded', init);
 
   async function init() {
+    applyAvatarFromCache();
     const params = new URLSearchParams(window.location.search);
     const itemId = params.get('id');
     if (!itemId) { window.location.href = '/'; return; }
 
     inventory = await loadInventory();
     applyAwayBanner(inventory.settings);
+    applyAvatar(inventory.settings);
     currentItem = inventory.items.find(i => i.id === itemId);
 
     if (!currentItem) {
@@ -42,6 +44,27 @@
       if (res.ok) return res.json();
     } catch (_) {}
     return { settings: {}, items: [] };
+  }
+
+  /* --- Avatar --------------------------------------------- */
+  function applyAvatarFromCache() {
+    try {
+      const url = localStorage.getItem('gm_avatar_url');
+      if (!url) return;
+      const img = document.getElementById('header-avatar-img');
+      if (!img) return;
+      img.parentElement.classList.remove('initials-only');
+      img.src = url;
+    } catch (_) {}
+  }
+
+  function applyAvatar(settings) {
+    if (!settings || !settings.avatarUrl) return;
+    const img = document.getElementById('header-avatar-img');
+    if (!img) return;
+    img.parentElement.classList.remove('initials-only');
+    img.src = settings.avatarUrl;
+    try { localStorage.setItem('gm_avatar_url', settings.avatarUrl); } catch (_) {}
   }
 
   /* --- Away Banner ----------------------------------------- */
@@ -151,27 +174,26 @@
       priceAreaEl.insertAdjacentHTML('beforeend', '<span class="item-sold-label">Sold</span>');
     }
 
-    // Location — prefer per-item ZIP, fall back to global
+    // Location — prefer per-item ZIP, fall back to global default
     const locEl = document.getElementById('item-location');
-    const zip = item.sellerZip || (settings && settings.sellerZip) || '';
+    const zip = item.zip || (settings && settings.sellerZip) || '';
     if (locEl && zip) {
       locEl.innerHTML = `
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        Seller ZIP: ${escHtml(zip)}`;
+        Item ZIP: ${escHtml(zip)}`;
     }
 
-    // Inquire placeholder
-    renderInquire(item);
+    // Approximate pickup area map (above inquiry button)
+    initLocationMap(item, settings);
 
-    // PayPal
-    renderPayPal(item, settings);
-
-    // Shipping estimate — use per-item ZIP if available
-    renderShippingEstimate(item, settings);
+    // Inquire / purchase area
+    renderInquireForm(item, settings);
 
     // Accordion content
     const descEl = document.getElementById('acc-description');
-    if (descEl) descEl.textContent = item.description || 'No description provided.';
+    if (descEl) descEl.innerHTML = item.description
+      ? escHtml(item.description).replace(/\n/g, '<br>')
+      : '<em style="color:var(--text-muted)">No description provided.</em>';
 
     const detailsEl = document.getElementById('acc-details');
     if (detailsEl && item.details && Object.keys(item.details).length) {
@@ -182,37 +204,269 @@
       }</table>`;
     }
 
-    const shippingEl = document.getElementById('acc-shipping');
-    if (shippingEl && item.shipping) {
-      const s = item.shipping;
-      const lines = [];
-      if (s.localPickup) lines.push('<strong>Local Pickup:</strong> Available');
-      if (s.available) {
-        if (s.estimatedNationalCost > 0) {
-          lines.push(`<strong>Estimated Shipping:</strong> $${formatPrice(s.estimatedLocalCost)} local / $${formatPrice(s.estimatedNationalCost)} national`);
-        } else {
-          lines.push('<strong>Shipping:</strong> Available – price calculated based on your location');
-        }
-      } else {
-        lines.push('<strong>Shipping:</strong> Local pickup only – item cannot be shipped economically');
+  }
+
+  /* --- Inquire to Purchase --------------------------------- */
+  function renderInquireForm(item, settings) {
+    const area = document.getElementById('inquire-area');
+    if (!area) return;
+
+    if (item.sold) {
+      area.innerHTML = `
+        <div class="sold-notice">
+          <strong>This item has been sold</strong>
+          <p>Check back for more listings.</p>
+        </div>
+        <a href="/" class="btn btn-secondary" style="display:flex;justify-content:center;margin-top:0.5rem">← Browse all listings</a>`;
+      return;
+    }
+
+    if (settings && settings.sellerAwayMode) {
+      area.innerHTML = `
+        <div class="sold-notice" style="background:#fef3c7;border-color:#fde68a;color:#92400e">
+          <strong>Seller is currently away</strong>
+          <p>${escHtml(settings.sellerAwayMessage || 'Please check back soon.')}</p>
+        </div>`;
+      return;
+    }
+
+    area.innerHTML = `
+      <button class="inquire-purchase-btn" id="inquire-btn" aria-expanded="false" aria-controls="inq-form-wrap">
+        ✉&#xFE0E; Inquire to Purchase
+        <svg class="inq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div id="inq-form-wrap" class="inq-form-wrap" hidden>
+
+        <form id="inq-form" class="inq-form" novalidate>
+
+          <div class="inq-field">
+            <label class="inq-label" for="inq-name">Name *</label>
+            <input type="text" id="inq-name" class="inq-input" required autocomplete="name" placeholder="Your name">
+          </div>
+
+          <div class="inq-field">
+            <label class="inq-label">Fulfillment Preference *</label>
+            <div class="inq-radio-group">
+              <label class="inq-radio-opt"><input type="radio" name="fulfillment" value="ship"> Ship</label>
+              <label class="inq-radio-opt"><input type="radio" name="fulfillment" value="local_pickup"> Local Pickup</label>
+              <label class="inq-radio-opt"><input type="radio" name="fulfillment" value="freight"> Freight</label>
+            </div>
+          </div>
+
+          <div id="inq-shipping-row" hidden>
+            <button type="button" class="inq-ship-info-btn" id="inq-ship-info-btn" aria-expanded="false">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="8" stroke-width="3" stroke-linecap="round"/><line x1="12" y1="12" x2="12" y2="16"/></svg>
+              Shipping details
+            </button>
+            <div id="inq-ship-detail" class="inq-ship-detail" hidden></div>
+          </div>
+
+          <div class="inq-field">
+            <label class="inq-label">Payment Preference *</label>
+            <div class="inq-radio-group">
+              <label class="inq-radio-opt"><input type="radio" name="payment" value="paypal">
+                <svg class="pay-logo" viewBox="0 0 24 24" aria-hidden="true"><path fill="#003087" d="M7.4 2h7c2.7 0 4.8 1.9 4.5 5-.4 3.5-2.8 5-5.8 5H11l-.9 5H6.6l2-13h-1.2z"/><path fill="#009cde" d="M9 7h4c1.8 0 3 1 2.8 2.9-.3 2.2-1.8 3.1-3.8 3.1H10L9 7z"/></svg>
+                PayPal
+              </label>
+              <label class="inq-radio-opt"><input type="radio" name="payment" value="venmo">
+                <svg class="pay-logo" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="4" fill="#3D95CE"/><path fill="#fff" d="M17.5 4.5c.4.7.6 1.5.6 2.5 0 3-2.6 6.9-4.7 9.5H9.2L7 5.1l3.9-.4 1.1 8.7c1-1.7 2.2-4.3 2.2-6.1 0-.9-.2-1.6-.4-2.1l3.7-.7z"/></svg>
+                Venmo
+              </label>
+              <label class="inq-radio-opt"><input type="radio" name="payment" value="zelle">
+                <svg class="pay-logo" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="4" fill="#6D1ED4"/><path fill="#fff" d="M6 7h9l-7 5 7 5H6v-2h5.5l-5-3.5L11.5 9H6V7z"/></svg>
+                Zelle
+              </label>
+              <label class="inq-radio-opt"><input type="radio" name="payment" value="cash">
+                <svg class="pay-logo" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="4" fill="#1a7a4a"/><text x="12" y="17" text-anchor="middle" fill="#fff" font-size="14" font-weight="700" font-family="Arial,sans-serif">$</text></svg>
+                Cash
+              </label>
+            </div>
+          </div>
+
+          <div class="inq-field">
+            <label class="inq-label" for="inq-question">Do you have any questions?</label>
+            <textarea id="inq-question" class="inq-input inq-textarea" rows="3" placeholder="Ask about condition, history, measurements, dimensions, etc."></textarea>
+          </div>
+
+          <div class="inq-field">
+            <label class="inq-label">How would you like me to get back to you? *</label>
+            <div class="inq-radio-group">
+              <label class="inq-radio-opt"><input type="radio" name="replyMethod" value="text"> Text</label>
+              <label class="inq-radio-opt"><input type="radio" name="replyMethod" value="call"> Call</label>
+              <label class="inq-radio-opt"><input type="radio" name="replyMethod" value="email"> Email</label>
+            </div>
+          </div>
+
+          <div class="inq-field" id="inq-contact-field" hidden>
+            <label class="inq-label" id="inq-contact-label" for="inq-contact">Phone Number *</label>
+            <input type="tel" id="inq-contact" class="inq-input" autocomplete="tel" placeholder="555-867-5309">
+          </div>
+
+          <div id="inq-error" class="inq-error" hidden></div>
+
+          <div class="inq-submit-row">
+            <button type="submit" id="inq-submit-btn" class="inquire-submit-btn">Send Inquiry →</button>
+          </div>
+
+        </form>
+      </div>`;
+
+    // Toggle open/close
+    document.getElementById('inquire-btn').addEventListener('click', () => {
+      const wrap = document.getElementById('inq-form-wrap');
+      const opening = wrap.hidden;
+      wrap.hidden = !opening;
+      document.getElementById('inquire-btn').setAttribute('aria-expanded', String(opening));
+      document.querySelector('.inq-chevron').classList.toggle('flipped', opening);
+      if (opening) {
+        document.getElementById('inq-name').focus();
       }
-      if (s.notes) lines.push(`<strong>Note:</strong> ${escHtml(s.notes)}`);
-      shippingEl.innerHTML = lines.map(l => `<p>${l}</p>`).join('');
+    });
+
+    // Fulfillment → show shipping 'i' button when "Ship" is selected
+    document.querySelectorAll('input[name=fulfillment]').forEach(r => {
+      r.addEventListener('change', () => {
+        document.getElementById('inq-shipping-row').hidden = r.value !== 'ship';
+      });
+    });
+
+    // Shipping info toggle
+    document.getElementById('inq-ship-info-btn').addEventListener('click', () => {
+      const detail = document.getElementById('inq-ship-detail');
+      const btn    = document.getElementById('inq-ship-info-btn');
+      const open   = detail.hidden;
+      detail.hidden = !open;
+      btn.setAttribute('aria-expanded', String(open));
+      if (open) detail.innerHTML = buildInqShippingHtml(item);
+    });
+
+    // Reply method → show contact field with correct type
+    document.querySelectorAll('input[name=replyMethod]').forEach(r => {
+      r.addEventListener('change', () => {
+        const field   = document.getElementById('inq-contact-field');
+        const label   = document.getElementById('inq-contact-label');
+        const input   = document.getElementById('inq-contact');
+        const isEmail = r.value === 'email';
+        field.hidden       = false;
+        label.textContent  = isEmail ? 'Email Address *' : 'Phone Number *';
+        input.type         = isEmail ? 'email' : 'tel';
+        input.autocomplete = isEmail ? 'email' : 'tel';
+        input.placeholder  = isEmail ? 'you@example.com' : '555-867-5309';
+        input.focus();
+      });
+    });
+
+    // Form submit
+    document.getElementById('inq-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      await submitInquiry(item);
+    });
+  }
+
+  async function initLocationMap(item, settings) {
+    const mapEl = document.getElementById('item-location-map');
+    if (!mapEl || typeof L === 'undefined') return;
+    if (mapEl._leaflet_id) return; // already initialised
+
+    const zip = item.zip || (settings && settings.sellerZip) || '';
+    const query = zip ? zip + ', USA' : null;
+    if (!query) return;
+
+    mapEl.style.display = 'block';
+
+    try {
+      const res = await fetch(
+        'https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(query) + '&format=json&limit=1',
+        { headers: { 'User-Agent': 'GregsMarketplace/1.0' } }
+      );
+      const results = await res.json();
+      if (!results.length) { mapEl.style.display = 'none'; return; }
+
+      const lat = parseFloat(results[0].lat);
+      const lon = parseFloat(results[0].lon);
+
+      const map = L.map(mapEl, { scrollWheelZoom: false, zoomControl: true }).setView([lat, lon], 14);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 18,
+      }).addTo(map);
+
+      // Shaded circle ~0.5 mile radius
+      L.circle([lat, lon], {
+        radius: 800,
+        color: '#2563eb',
+        fillColor: '#3b82f6',
+        fillOpacity: 0.12,
+        weight: 2,
+      }).addTo(map);
+
+      L.popup({ closeButton: false, className: 'inq-map-popup', offset: [0, -4] })
+        .setLatLng([lat, lon])
+        .setContent('Approximate pickup area')
+        .openOn(map);
+
+    } catch (_) {
+      mapEl.style.display = 'none';
     }
   }
 
-  /* --- Inquire placeholder --------------------------------- */
-  function renderInquire(item) {
-    const area = document.getElementById('inquire-area');
-    if (!area || item.sold) { if (area) area.innerHTML = ''; return; }
-    area.innerHTML = `<button class="btn btn-secondary inquire-btn" id="inquire-btn" style="width:100%;justify-content:center;margin-bottom:0.5rem">✉ Inquire About This Item</button>`;
-    const btn = document.getElementById('inquire-btn');
-    if (btn) {
-      btn.addEventListener('click', () => {
-        btn.textContent = 'Inquiry feature coming soon — check back shortly!';
-        btn.disabled = true;
+  async function submitInquiry(item) {
+    const errEl = document.getElementById('inq-error');
+    errEl.hidden = true;
+
+    const name          = document.getElementById('inq-name').value.trim();
+    const fulfillmentEl = document.querySelector('input[name=fulfillment]:checked');
+    const paymentEl     = document.querySelector('input[name=payment]:checked');
+    const replyEl       = document.querySelector('input[name=replyMethod]:checked');
+    const contact       = document.getElementById('inq-contact').value.trim();
+    const question      = document.getElementById('inq-question').value.trim();
+
+    if (!name)          { showInqError('Please enter your name.'); return; }
+    if (!fulfillmentEl) { showInqError('Please select a fulfillment preference.'); return; }
+    if (!paymentEl)     { showInqError('Please select a payment preference.'); return; }
+    if (!replyEl)       { showInqError('Please select a preferred reply method.'); return; }
+    if (!contact)       { showInqError(replyEl.value === 'email' ? 'Please enter your email address.' : 'Please enter your phone number.'); return; }
+
+    const btn = document.getElementById('inq-submit-btn');
+    btn.disabled    = true;
+    btn.textContent = 'Sending…';
+
+    try {
+      const res = await fetch('/api/inquiries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          itemId:      item.id,
+          itemTitle:   item.title,
+          name,
+          fulfillment: fulfillmentEl.value,
+          payment:     paymentEl.value,
+          replyMethod: replyEl.value,
+          contact,
+          question,
+        }),
       });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Submission failed. Please try again.');
+
+      document.getElementById('inq-form-wrap').innerHTML = `
+        <div class="inq-confirmation">
+          <div class="inq-confirm-icon">✓</div>
+          <p>Thank you, I'll try to get back to you within 12h!</p>
+        </div>`;
+
+    } catch (ex) {
+      showInqError(ex.message);
+      btn.disabled    = false;
+      btn.textContent = 'Send Inquiry →';
     }
+  }
+
+  function showInqError(msg) {
+    const el = document.getElementById('inq-error');
+    el.textContent = msg;
+    el.hidden = false;
   }
 
   /* --- Gallery --------------------------------------------- */
@@ -313,136 +567,67 @@
     });
   }
 
-  /* --- PayPal ---------------------------------------------- */
-  function renderPayPal(item, settings) {
-    const area = document.getElementById('paypal-area');
-    if (!area) return;
-
-    if (item.sold) {
-      area.innerHTML = `
-        <div class="sold-notice">
-          <strong>This item has been sold</strong>
-          <p>Check back for more listings or browse other items.</p>
-        </div>
-        <a href="/" class="btn btn-secondary" style="justify-content:center;margin-top:0.5rem">← Back to all listings</a>`;
-      return;
-    }
-
-    if (settings && settings.sellerAwayMode) {
-      area.innerHTML = `
-        <div class="sold-notice" style="background:#fef3c7;border-color:#fde68a;color:#92400e;">
-          <strong>Seller is currently away</strong>
-          <p>${escHtml(settings.sellerAwayMessage || 'Check back soon!')}</p>
-        </div>`;
-      return;
-    }
-
-    const paypalMe = (settings && settings.paypalMe) ? settings.paypalMe : '';
-    const amount = formatPrice(item.price);
-    let paypalUrl;
-    if (paypalMe && paypalMe !== 'YourPayPalUsername') {
-      paypalUrl = `https://www.paypal.me/${encodeURIComponent(paypalMe)}/${amount}`;
-    } else {
-      const email = (settings && settings.paypalEmail) ? settings.paypalEmail : '';
-      paypalUrl = `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=${encodeURIComponent(email)}&item_name=${encodeURIComponent(item.title)}&amount=${amount}&currency_code=USD&no_note=0`;
-    }
-
-    area.innerHTML = `
-      <a href="${escAttr(paypalUrl)}" target="_blank" rel="noopener noreferrer" class="paypal-btn">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7.076 21.337H2.47a.641.641 0 01-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106zm14.146-14.42a3.35 3.35 0 00-.607-.541c-.013.076-.026.175-.041.254-.93 4.778-4.005 7.201-9.138 7.201h-2.19a.563.563 0 00-.556.479l-1.187 7.527h-.506l-.24 1.516a.56.56 0 00.554.647h3.882c.46 0 .85-.334.922-.788.06-.26.76-4.852.816-5.09a.932.932 0 01.923-.788h.58c3.76 0 6.705-1.528 7.565-5.946.36-1.847.174-3.388-.777-4.471z"/></svg>
-        Buy Now with PayPal – $${amount}
-      </a>
-      <p style="font-size:0.75rem;color:var(--text-muted);text-align:center;margin-top:0.25rem">
-        Secure checkout via PayPal. You do not need a PayPal account.
-      </p>`;
+  /* --- Inline Shipping Info (inquiry form) ----------------- */
+  function buildInqShippingHtml(item) {
+    const type = shippingTypeForItem(item);
+    const cfg = SHIPPING_CONFIGS[type] || SHIPPING_CONFIGS.standard;
+    return `
+      <div class="inq-shipping-info">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        ${cfg.rate ? `<strong>${cfg.rate} flat rate</strong> — ` : ''}${cfg.detail}
+      </div>`;
   }
 
-  /* --- Shipping Estimate ------------------------------------ */
-  function renderShippingEstimate(item, settings) {
+  /* --- Flat Shipping --------------------------------------- */
+  const SHIPPING_CONFIGS = {
+    small:     { rate: '$10',  detail: 'Flat $10 shipping anywhere in the continental US.' },
+    standard:  { rate: '$20',  detail: 'Flat $20 shipping anywhere in the continental US.' },
+    bicycle:   { rate: '$250', detail: 'Flat $250 shipping via <strong>Bike Flights</strong> — professionally packed and insured, anywhere in the continental US.' },
+    furniture: { rate: null,   detail: 'Local pickup or freight delivery — contact me to coordinate. A deposit is required with the balance due at pickup or delivery.' },
+  };
+
+  const SHIPPING_POLICY = 'I\'ll refund any shipping cost in excess of what\'s actually charged, and will absorb any overage up to $25. Rates apply to deliveries within the continental US. Contact me for international shipping rates.';
+
+  function shippingTypeForItem(item) {
+    if (item.shippingType) return item.shippingType;
+    const cat = item.category || '';
+    if (cat === 'Bicycles & Parts') return 'bicycle';
+    if (cat === 'Furniture & Household Items') return 'furniture';
+    if (cat === 'Clothing & Accessories' || cat === 'Misc') return 'small';
+    return 'standard';
+  }
+
+  function buildFlatShippingHtml(item) {
+    const type = shippingTypeForItem(item);
+    const cfg = SHIPPING_CONFIGS[type] || SHIPPING_CONFIGS.standard;
+    const rateHtml = cfg.rate
+      ? `<div class="flat-ship-rate">${cfg.rate} flat rate</div>`
+      : `<div class="flat-ship-rate flat-ship-contact">Contact seller for shipping</div>`;
+    const policyHtml = cfg.rate
+      ? `<div class="flat-ship-policy">${SHIPPING_POLICY}</div>`
+      : '';
+    return `
+      <div class="flat-ship-detail">${cfg.detail}</div>
+      ${policyHtml}`;
+  }
+
+  function renderFlatShipping(item) {
     const wrap = document.getElementById('shipping-estimate');
     if (!wrap) return;
-
-    if (!item.shipping || !item.shipping.available) {
-      wrap.innerHTML = `<p class="no-ship-msg">📦 Local pickup only – this item cannot be shipped.</p>`;
-      return;
-    }
-
-    const sellerZip = item.sellerZip || (settings && settings.sellerZip) || '';
-
+    const type = shippingTypeForItem(item);
+    const cfg = SHIPPING_CONFIGS[type] || SHIPPING_CONFIGS.standard;
     wrap.innerHTML = `
-      <h4>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-        Estimate Shipping Cost
-      </h4>
-      <form class="zip-form" id="zip-form">
-        <input type="text" class="zip-input" id="buyer-zip" placeholder="Your ZIP code" maxlength="5" pattern="[0-9]{5}" inputmode="numeric" ${sellerZip ? '' : 'disabled'}>
-        <button type="submit" class="zip-btn">Estimate</button>
-      </form>
-      <div id="shipping-result"></div>`;
-
-    document.getElementById('zip-form').addEventListener('submit', e => {
-      e.preventDefault();
-      const buyerZip = document.getElementById('buyer-zip').value.trim();
-      if (buyerZip.length !== 5 || !/^\d{5}$/.test(buyerZip)) {
-        showShippingResult('Please enter a valid 5-digit ZIP code.', null);
-        return;
-      }
-      estimateShipping(buyerZip, sellerZip, item.shipping);
-    });
-  }
-
-  function estimateShipping(buyerZip, sellerZip, shipping) {
-    const zone = getShippingZone(sellerZip, buyerZip);
-    const localCost = shipping.estimatedLocalCost || 0;
-    const nationalCost = shipping.estimatedNationalCost || 0;
-
-    let cost, zoneLabel;
-    if (zone === 'same') {
-      if (!shipping.available) {
-        showShippingResult('Local pickup only from seller ZIP ' + sellerZip + '.', null);
-        return;
-      }
-      cost = localCost;
-      zoneLabel = 'Local / Nearby';
-    } else if (zone === 'regional') {
-      cost = Math.round(localCost + (nationalCost - localCost) * 0.5);
-      zoneLabel = 'Regional';
-    } else {
-      cost = nationalCost;
-      zoneLabel = 'National';
-    }
-
-    if (shipping.localPickup && zone === 'same') {
-      showShippingResult(
-        `<span class="ship-cost">Free local pickup available!</span> Seller ZIP: ${escHtml(sellerZip)}`,
-        'Shipping zone: ' + zoneLabel + (cost > 0 ? ` | Estimated ship cost: ~$${formatPrice(cost)}` : '')
-      );
-    } else if (!shipping.available) {
-      showShippingResult('This item is local pickup only.', 'Seller ZIP: ' + escHtml(sellerZip));
-    } else {
-      showShippingResult(
-        `<span class="ship-cost">Estimated shipping: ~$${formatPrice(cost)}</span>`,
-        `Shipping zone: ${zoneLabel} | This is an estimate — actual cost calculated at shipment.`
-      );
-    }
-  }
-
-  function getShippingZone(sellerZip, buyerZip) {
-    if (!sellerZip || !buyerZip) return 'national';
-    const s = parseInt(sellerZip.charAt(0));
-    const b = parseInt(buyerZip.charAt(0));
-    if (sellerZip.substring(0, 3) === buyerZip.substring(0, 3)) return 'same';
-    if (Math.abs(s - b) <= 1) return 'regional';
-    return 'national';
-  }
-
-  function showShippingResult(main, sub) {
-    const el = document.getElementById('shipping-result');
-    if (!el) return;
-    el.innerHTML = `
-      <div class="shipping-result">
-        <div class="ship-cost">${main}</div>
-        ${sub ? `<div class="ship-note">${sub}</div>` : ''}
+      <div class="flat-ship-box">
+        <div class="flat-ship-label">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+          Shipping
+        </div>
+        ${cfg.rate
+          ? `<div class="flat-ship-rate">${cfg.rate} flat rate</div>`
+          : `<div class="flat-ship-rate flat-ship-contact">Contact seller</div>`
+        }
+        <div class="flat-ship-detail">${cfg.detail}</div>
+        ${cfg.rate ? `<div class="flat-ship-policy">${SHIPPING_POLICY}</div>` : ''}
       </div>`;
   }
 

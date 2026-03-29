@@ -1,33 +1,23 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 272 56" width="272" height="56" role="img" aria-label="Greg's Marketplace">
-  <!-- White pill background -->
-  <rect x="0" y="0" width="272" height="56" rx="10" fill="white"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 213 56" width="213" height="56" role="img" aria-label="Greg's Marketplace">
 
-  <!-- Storefront icon (x offset: 8px padding) -->
-  <!-- Building body -->
-  <rect x="10" y="22" width="46" height="28" rx="3" fill="#0064D2"/>
-  <!-- Awning -->
-  <rect x="8" y="13" width="50" height="13" rx="3" fill="#E53238"/>
-  <!-- Awning stripes -->
-  <rect x="16"  y="13" width="5" height="13" fill="#F5AF02" opacity="0.75"/>
-  <rect x="27" y="13" width="5" height="13" fill="#F5AF02" opacity="0.75"/>
-  <rect x="38" y="13" width="5" height="13" fill="#F5AF02" opacity="0.75"/>
-  <!-- Awning scallop -->
-  <path d="M8 26 Q14.25 31 20.5 26 Q26.75 31 33 26 Q39.25 31 45.5 26 Q51.75 31 58 26" fill="none" stroke="#C0392B" stroke-width="1.5"/>
-  <!-- Door -->
-  <rect x="25" y="34" width="14" height="16" rx="2" fill="white" opacity="0.95"/>
-  <circle cx="34.5" cy="42" r="1.2" fill="#0064D2"/>
-  <!-- Left window -->
-  <rect x="13"  y="26" width="9" height="7" rx="1.5" fill="white" opacity="0.9"/>
-  <!-- Right window -->
-  <rect x="44" y="26" width="9" height="7" rx="1.5" fill="white" opacity="0.9"/>
-  <!-- Ground line -->
-  <line x1="8" y1="50" x2="58" y2="50" stroke="#86B817" stroke-width="2.5" stroke-linecap="round"/>
-
-  <!-- "Greg's" in eBay-style colored letters (x offset: 68px) -->
-  <text font-family="'Arial Black','Arial',sans-serif" font-weight="900" font-size="24" y="32" x="70">
+  <!-- "Greg's" in eBay-style colored letters -->
+  <text font-family="'Arial Black','Arial',sans-serif" font-weight="900" font-size="24" y="32" x="8">
     <tspan fill="#E53238">G</tspan><tspan fill="#0064D2">r</tspan><tspan fill="#F5AF02">e</tspan><tspan fill="#86B817">g</tspan><tspan fill="#374151">'s</tspan>
   </text>
 
   <!-- "Marketplace" subtitle -->
-  <text x="71" y="48" font-family="'Arial','sans-serif'" font-size="13" fill="#6B7280" letter-spacing="1.8" font-weight="600">MARKETPLACE</text>
+  <text x="9" y="48" font-family="'Arial','sans-serif'" font-size="13" fill="#6B7280" letter-spacing="1.8" font-weight="600">MARKETPLACE</text>
+
+  <!-- Storefront icon (shifted 15px closer) -->
+  <rect x="160" y="22" width="46" height="28" rx="3" fill="#0064D2"/>
+  <rect x="158" y="13" width="50" height="13" rx="3" fill="#E53238"/>
+  <rect x="166" y="13" width="5" height="13" fill="#F5AF02" opacity="0.75"/>
+  <rect x="177" y="13" width="5" height="13" fill="#F5AF02" opacity="0.75"/>
+  <rect x="188" y="13" width="5" height="13" fill="#F5AF02" opacity="0.75"/>
+  <path d="M158 26 Q164.25 31 170.5 26 Q176.75 31 183 26 Q189.25 31 195.5 26 Q201.75 31 208 26" fill="none" stroke="#C0392B" stroke-width="1.5"/>
+  <rect x="175" y="34" width="14" height="16" rx="2" fill="white" opacity="0.95"/>
+  <circle cx="184.5" cy="42" r="1.2" fill="#0064D2"/>
+  <rect x="163" y="26" width="9" height="7" rx="1.5" fill="white" opacity="0.9"/>
+  <rect x="194" y="26" width="9" height="7" rx="1.5" fill="white" opacity="0.9"/>
+  <line x1="158" y1="50" x2="208" y2="50" stroke="#86B817" stroke-width="2.5" stroke-linecap="round"/>
 </svg>

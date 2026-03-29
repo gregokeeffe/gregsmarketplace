@@ -4,7 +4,7 @@
 (function () {
   'use strict';
 
-  const CATEGORIES = ['All', 'Bicycles & Parts', 'Autos & Parts', 'Furniture & Household Items', 'Clothing & Accessories', 'Misc'];
+  const CATEGORIES = ['All', 'Bicycles & Parts', 'Autos & Parts', 'Furniture & Household Items', 'Clothing & Accessories', 'Misc', 'Sold'];
 
   let inventory = null;
   let activeCategory = 'All';
@@ -14,14 +14,36 @@
   document.addEventListener('DOMContentLoaded', init);
 
   async function init() {
+    applyAvatarFromCache();
     renderSkeletons();
     inventory = await loadInventory();
     applyAwayBanner(inventory.settings);
     applyHeroText(inventory.settings);
+    applyAvatar(inventory.settings);
     renderCategories(inventory.items);
     renderListings();
     renderAboutSection(inventory.settings);
     bindEvents();
+  }
+
+  function applyAvatarFromCache() {
+    try {
+      const url = localStorage.getItem('gm_avatar_url');
+      if (!url) return;
+      const img = document.getElementById('header-avatar-img');
+      if (!img) return;
+      img.parentElement.classList.remove('initials-only');
+      img.src = url;
+    } catch (_) {}
+  }
+
+  function applyAvatar(settings) {
+    if (!settings || !settings.avatarUrl) return;
+    const img = document.getElementById('header-avatar-img');
+    if (!img) return;
+    img.parentElement.classList.remove('initials-only');
+    img.src = settings.avatarUrl;
+    try { localStorage.setItem('gm_avatar_url', settings.avatarUrl); } catch (_) {}
   }
 
   function applyHeroText(settings) {
@@ -39,7 +61,34 @@
     let show = false;
     const aboutEl = document.getElementById('about-text-public');
     if (settings.about && aboutEl) {
-      aboutEl.innerHTML = `<div class="about-text"><h2>About</h2><p>${escHtml(settings.about)}</p></div>`;
+      const avatarHtml = settings.avatarUrl
+        ? `<img src="${escAttr(settings.avatarUrl)}" alt="Greg OKeeffe" class="about-avatar">`
+        : '';
+      const profileLinks = [];
+      if (settings.ebayProfileUrl) {
+        profileLinks.push(`<a href="${escAttr(settings.ebayProfileUrl)}" target="_blank" rel="noopener" class="about-profile-link about-profile-ebay">
+          <svg viewBox="0 0 36 16" height="14" aria-hidden="true"><text y="13" font-family="Arial Black,sans-serif" font-size="13" font-weight="900"><tspan fill="#E53238">e</tspan><tspan fill="#0064D2">B</tspan><tspan fill="#F5AF02">a</tspan><tspan fill="#86B817">y</tspan></text></svg>
+          View my eBay listings
+        </a>`);
+      }
+      if (settings.facebookProfileUrl) {
+        profileLinks.push(`<a href="${escAttr(settings.facebookProfileUrl)}" target="_blank" rel="noopener" class="about-profile-link about-profile-fb">
+          <svg viewBox="0 0 18 18" height="15" aria-hidden="true"><rect width="18" height="18" rx="4" fill="#1877F2"/><path d="M10.2 9.5h1.6l.3-2H10.2V6.3c0-.55.27-.88.9-.88H12V4.1s-.57-.08-1.2-.08c-1.6 0-2.6.97-2.6 2.72V7.5H6.6v2h1.6V15h2V9.5z" fill="white"/></svg>
+          View my Facebook listings
+        </a>`);
+      }
+      const linksHtml = profileLinks.length
+        ? `<div class="about-profile-links">${profileLinks.join('')}</div>`
+        : '';
+      aboutEl.innerHTML = `
+        <div class="about-with-avatar">
+          ${avatarHtml}
+          <div class="about-text-block">
+            <h2>About</h2>
+            <p>${escHtml(settings.about)}</p>
+            ${linksHtml}
+          </div>
+        </div>`;
       show = true;
     }
     const faqSection = document.getElementById('faq-section-public');
@@ -97,7 +146,9 @@
     CATEGORIES.forEach(cat => {
       const count = cat === 'All'
         ? items.filter(i => !i.sold && !i.hidden).length
-        : items.filter(i => i.category === cat && !i.sold && !i.hidden).length;
+        : cat === 'Sold'
+          ? items.filter(i => i.sold && i.showInSold).length
+          : items.filter(i => i.category === cat && !i.sold && !i.hidden).length;
 
       const btn = document.createElement('button');
       btn.className = 'cat-btn' + (cat === activeCategory ? ' active' : '');
@@ -110,11 +161,17 @@
   /* --- Filtering & Sorting --------------------------------- */
   function getFilteredItems() {
     if (!inventory) return [];
-    let items = inventory.items.filter(i => !i.hidden);
 
-    if (activeCategory !== 'All') {
-      items = items.filter(i => i.category === activeCategory);
+    let items;
+    if (activeCategory === 'Sold') {
+      items = inventory.items.filter(i => i.sold && i.showInSold);
+    } else {
+      items = inventory.items.filter(i => !i.hidden && !i.sold);
+      if (activeCategory !== 'All') {
+        items = items.filter(i => i.category === activeCategory);
+      }
     }
+
     switch (sortBy) {
       case 'price-asc':
         items.sort((a, b) => a.price - b.price);
@@ -126,11 +183,9 @@
         items.sort((a, b) => a.title.localeCompare(b.title));
         break;
       default:
-        // Featured first, then sold last
-        items.sort((a, b) => {
-          if (a.featured !== b.featured) return a.featured ? -1 : 1;
-          return a.sold === b.sold ? 0 : a.sold ? 1 : -1;
-        });
+        if (activeCategory !== 'Sold') {
+          items.sort((a, b) => (a.featured === b.featured) ? 0 : a.featured ? -1 : 1);
+        }
     }
     return items;
   }
@@ -156,7 +211,7 @@
         <div class="no-results">
           <div class="no-results-icon">🔍</div>
           <h3>No listings found</h3>
-          <p>${searchQuery ? 'Try a different search term.' : 'No items in this category yet.'}</p>
+          <p>No items in this category yet.</p>
         </div>`;
       return;
     }

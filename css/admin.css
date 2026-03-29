@@ -474,6 +474,121 @@ input, select, textarea { font-family: var(--font); }
   .items-table tr:hover td { background: var(--card); }
 }
 
+/* --- Item Cards (Accordion) ------------------------------- */
+.items-accordion-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+.item-card {
+  background: var(--card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.item-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+}
+.item-card-info {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+.item-card-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.item-card-meta {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 0.1rem;
+}
+.item-card-quick {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  flex-shrink: 0;
+}
+.item-card-body {
+  border-top: 1px solid var(--border);
+  padding: 1.25rem;
+  background: var(--bg);
+}
+.item-edit-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+.item-edit-section {
+  background: var(--card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  padding: 0.875rem;
+}
+.item-edit-section-title {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+.item-edit-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+.item-edit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.item-edit-row2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.625rem;
+}
+.item-edit-full {
+  margin-top: 0.75rem;
+}
+.item-edit-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1rem;
+  padding-top: 0.875rem;
+  border-top: 1px solid var(--border);
+}
+.detail-pair-row {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  margin-bottom: 0.3rem;
+}
+.detail-pair-row .settings-input {
+  padding: 0.3rem 0.5rem;
+  font-size: 0.82rem;
+}
+.detail-pair-row .detail-key-input { flex: 0 0 38%; }
+.detail-pair-row .detail-val-input { flex: 1; }
+
+@media (max-width: 860px) {
+  .item-edit-grid { grid-template-columns: 1fr; }
+  .item-card-quick { display: none; }
+}
+@media (max-width: 600px) {
+  .item-edit-row2 { grid-template-columns: 1fr; }
+}
+
 /* --- Settings Form ---------------------------------------- */
 .settings-grid {
   display: grid;
@@ -628,3 +743,53 @@ input, select, textarea { font-family: var(--font); }
 .alert svg { width: 18px; height: 18px; flex-shrink: 0; margin-top: 0.1rem; }
 .alert-warning { background: var(--warning-bg); color: #92400e; border: 1px solid #fde68a; }
 .alert-info { background: var(--primary-light); color: #1e40af; border: 1px solid #93c5fd; }
+
+/* --- Inquiry Cards ---------------------------------------- */
+.inq-card {
+  background: var(--card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  margin-bottom: 0.75rem;
+  overflow: hidden;
+}
+.inq-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  gap: 0.75rem;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.inq-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  font-size: 0.9rem;
+}
+.inq-card-item { color: var(--text-muted); font-size: 0.8rem; }
+.inq-card-date { font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; }
+.inq-card-body { padding: 0.875rem 1rem; display: flex; flex-direction: column; gap: 0.4rem; }
+.inq-detail-row {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+.inq-detail-label { font-weight: 600; color: var(--text-muted); }
+.inq-question span { color: var(--text); font-style: italic; }
+.inq-card-actions {
+  padding: 0.625rem 1rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 0.4rem;
+  background: var(--bg);
+}
+
+/* --- Detail row reorder buttons --------------------------- */
+.detail-row-btns {
+  display: flex;
+  gap: 0.2rem;
+  flex-shrink: 0;
+}
