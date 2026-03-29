@@ -18,6 +18,10 @@
     <div class="header-inner">
       <a href="/" class="site-logo" aria-label="Greg's Marketplace home">
         <img src="/images/logo.svg" alt="Greg's Marketplace" class="logo-img">
+        <div class="logo-avatar" title="Greg OKeeffe">
+          <img src="/images/avatar.jpg" alt="Greg OKeeffe" class="logo-avatar-img" onerror="this.parentElement.classList.add('initials-only')">
+          <span class="logo-avatar-fallback" aria-hidden="true">GO</span>
+        </div>
       </a>
       <div class="header-actions"></div>
     </div>
@@ -72,6 +76,9 @@
 
               <!-- Location -->
               <div class="item-location" id="item-location" aria-label="Seller location"></div>
+
+              <!-- Inquire -->
+              <div id="inquire-area"></div>
 
               <!-- PayPal -->
               <div id="paypal-area">
@@ -153,15 +160,14 @@
   <footer class="site-footer" role="contentinfo">
     <div class="footer-inner">
       <div class="footer-brand">
-        <div class="footer-name">Greg's Marketplace</div>
-        <div>Personal buy/sell listings</div>
+        <div class="footer-name">Greg's personal listings</div>
       </div>
       <nav class="footer-links" aria-label="Footer navigation">
         <a href="/">← All Listings</a>
       </nav>
     </div>
     <div class="footer-bottom">
-      &copy; <span id="footer-year"></span> Greg's Marketplace &mdash; Payments secured by PayPal
+      &copy; 2026 Gregory OKeeffe
     </div>
   </footer>
 

@@ -20,6 +20,10 @@
     <div class="header-inner">
       <a href="/" class="site-logo" aria-label="Greg's Marketplace home">
         <img src="/images/logo.svg" alt="Greg's Marketplace" class="logo-img">
+        <div class="logo-avatar" title="Greg OKeeffe">
+          <img src="/images/avatar.jpg" alt="Greg OKeeffe" class="logo-avatar-img" onerror="this.parentElement.classList.add('initials-only')">
+          <span class="logo-avatar-fallback" aria-hidden="true">GO</span>
+        </div>
       </a>
 
       <div class="header-actions"></div>
@@ -28,8 +32,8 @@
 
   <!-- Hero -->
   <section class="hero" aria-label="Welcome">
-    <h1>Skipping the fees and sharing the savings.</h1>
-    <p>A small collection of well-cared-for pieces I've owned and enjoyed. No marketplace noise, no hidden fees — just my simple, transparent way to pass along some great items.</p>
+    <h1 id="hero-title">Skipping the fees and sharing the savings.</h1>
+    <p id="hero-subtitle">A small collection of well-cared-for pieces I've owned and enjoyed. No marketplace noise, no hidden fees — just my simple, transparent way to pass along some great items.</p>
   </section>
 
   <!-- Category Filter -->
@@ -41,21 +45,6 @@
 
   <!-- Toolbar -->
   <div class="toolbar" role="toolbar" aria-label="Listing controls">
-    <form class="search-form" id="search-form" role="search" aria-label="Search listings">
-      <input
-        type="search"
-        class="search-input"
-        id="search-input"
-        placeholder="Search listings…"
-        aria-label="Search"
-        autocomplete="off"
-      >
-      <button type="submit" class="search-btn" aria-label="Search">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
-          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-        </svg>
-      </button>
-    </form>
     <p class="results-info" id="results-info" aria-live="polite">&nbsp;</p>
     <label class="sr-only" for="sort-select">Sort listings</label>
     <select class="sort-select" id="sort-select">
@@ -81,12 +70,22 @@
     </section>
   </main>
 
+  <!-- About & FAQ section (populated from settings by app.js) -->
+  <section id="about-section" class="about-section" hidden>
+    <div class="about-inner">
+      <div id="about-text-public"></div>
+      <div id="faq-section-public" hidden>
+        <h2>Frequently Asked Questions</h2>
+        <dl id="faq-list-public" class="faq-list-public"></dl>
+      </div>
+    </div>
+  </section>
+
   <!-- Footer -->
   <footer class="site-footer" role="contentinfo">
     <div class="footer-inner">
       <div class="footer-brand">
-        <div class="footer-name">Greg's Marketplace</div>
-        <div>Personal buy/sell listings</div>
+        <div class="footer-name">Greg's personal listings</div>
       </div>
       <nav class="footer-links" aria-label="Footer navigation">
         <a href="/">All Listings</a>
@@ -96,7 +95,7 @@
       </nav>
     </div>
     <div class="footer-bottom">
-      &copy; <span id="footer-year"></span> Greg's Marketplace &mdash; Payments secured by PayPal
+      &copy; 2026 Gregory OKeeffe
     </div>
   </footer>
 

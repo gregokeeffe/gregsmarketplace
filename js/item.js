@@ -160,6 +160,9 @@
         Seller ZIP: ${escHtml(zip)}`;
     }
 
+    // Inquire placeholder
+    renderInquire(item);
+
     // PayPal
     renderPayPal(item, settings);
 
@@ -195,6 +198,20 @@
       }
       if (s.notes) lines.push(`<strong>Note:</strong> ${escHtml(s.notes)}`);
       shippingEl.innerHTML = lines.map(l => `<p>${l}</p>`).join('');
+    }
+  }
+
+  /* --- Inquire placeholder --------------------------------- */
+  function renderInquire(item) {
+    const area = document.getElementById('inquire-area');
+    if (!area || item.sold) { if (area) area.innerHTML = ''; return; }
+    area.innerHTML = `<button class="btn btn-secondary inquire-btn" id="inquire-btn" style="width:100%;justify-content:center;margin-bottom:0.5rem">✉ Inquire About This Item</button>`;
+    const btn = document.getElementById('inquire-btn');
+    if (btn) {
+      btn.addEventListener('click', () => {
+        btn.textContent = 'Inquiry feature coming soon — check back shortly!';
+        btn.disabled = true;
+      });
     }
   }
 
@@ -236,6 +253,51 @@
     if (mainWrap) {
       mainWrap.addEventListener('click', () => openLightbox(lightboxIndex));
     }
+
+    // Detect portrait orientation and apply side-stack layout
+    applyPortraitLayout(photoList);
+  }
+
+  function applyPortraitLayout(photoList) {
+    const gallery = document.querySelector('.item-gallery');
+    if (!gallery) return;
+
+    // Remove existing side stack
+    const existing = gallery.querySelector('.gallery-side-stack');
+    if (existing) existing.remove();
+    gallery.classList.remove('portrait-layout');
+
+    const probe = new Image();
+    probe.onload = () => {
+      const isPortrait = probe.naturalHeight > probe.naturalWidth * 1.1;
+      if (!isPortrait || photoList.length < 2) return;
+
+      gallery.classList.add('portrait-layout');
+      const mainEl = document.getElementById('gallery-main');
+      if (!mainEl) return;
+
+      const sidePhotos = photoList.slice(1, 4);
+      const stack = document.createElement('div');
+      stack.className = 'gallery-side-stack';
+      stack.innerHTML = sidePhotos.map((src, i) => `
+        <div class="gallery-side-item" data-index="${i + 1}" role="button" tabindex="0" aria-label="View photo ${i + 2}">
+          <img src="${escAttr(src)}" alt="Photo ${i + 2}" loading="lazy" onerror="this.src='/images/placeholder.svg'">
+        </div>`).join('');
+
+      mainEl.after(stack);
+
+      stack.addEventListener('click', e => {
+        const sitem = e.target.closest('.gallery-side-item');
+        if (sitem) setMainPhoto(parseInt(sitem.dataset.index));
+      });
+      stack.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          const sitem = e.target.closest('.gallery-side-item');
+          if (sitem) setMainPhoto(parseInt(sitem.dataset.index));
+        }
+      });
+    };
+    probe.src = photoList[0];
   }
 
   function setMainPhoto(idx) {

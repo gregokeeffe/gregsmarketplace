@@ -197,6 +197,7 @@
 
     // Settings form
     document.getElementById('settings-form').addEventListener('submit', saveSettings);
+    bindFAQForm();
   }
 
   function closeSidebar() {
@@ -303,6 +304,9 @@
             </button>
             <button class="btn btn-xs ${item.hidden ? 'btn-warning' : 'btn-secondary'} toggle-hidden-btn" data-id="${escAttr(item.id)}" title="${item.hidden ? 'Show on site' : 'Hide from site'}">
               ${item.hidden ? '👁 Show' : '🙈 Hide'}
+            </button>
+            <button class="btn btn-xs ${item.featured ? 'btn-primary' : 'btn-secondary'} toggle-featured-btn" data-id="${escAttr(item.id)}" title="${item.featured ? 'Remove featured' : 'Mark as featured'}">
+              ${item.featured ? '⭐ Featured' : '☆ Feature'}
             </button>
             <a href="/item.html?id=${encodeURIComponent(item.id)}" target="_blank" class="btn btn-xs btn-secondary" title="View listing">👁</a>
             <button class="btn btn-xs btn-danger delete-item-btn" data-id="${escAttr(item.id)}" title="Delete">🗑</button>
@@ -463,6 +467,25 @@
         cell.querySelector('.cancel-cross-btn').addEventListener('click', () => {
           renderItems();
         });
+      });
+    });
+
+    // Toggle featured
+    document.querySelectorAll('.toggle-featured-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.id;
+        const item = inventory.items.find(i => i.id === id);
+        if (!item) return;
+        item.featured = !item.featured;
+        btn.disabled = true;
+        try {
+          await saveInventory(inventory);
+          renderItems();
+          showToast(item.featured ? `"${item.title}" marked as featured` : `"${item.title}" removed from featured`, 'success');
+        } catch (ex) {
+          item.featured = !item.featured;
+          showToast(ex.message, 'error');
+        }
       });
     });
 
@@ -642,6 +665,10 @@
     setValue('s-paypal-email', s.paypalEmail || '');
     setValue('s-contact-email', s.contactEmail || '');
     setValue('s-away-message', s.sellerAwayMessage || '');
+    setValue('s-hero-title', s.heroTitle || '');
+    setValue('s-hero-subtitle', s.heroSubtitle || '');
+    setValue('s-about', s.about || '');
+    renderFAQs();
   }
 
   async function saveSettings(e) {
@@ -653,6 +680,9 @@
     s.paypalEmail = document.getElementById('s-paypal-email').value.trim();
     s.contactEmail = document.getElementById('s-contact-email').value.trim();
     s.sellerAwayMessage = document.getElementById('s-away-message').value.trim();
+    s.heroTitle = document.getElementById('s-hero-title').value.trim();
+    s.heroSubtitle = document.getElementById('s-hero-subtitle').value.trim();
+    s.about = document.getElementById('s-about').value.trim();
 
     const btn = e.target.querySelector('[type="submit"]');
     btn.disabled = true;
@@ -666,6 +696,58 @@
       btn.disabled = false;
       btn.textContent = 'Save Settings';
     }
+  }
+
+  /* ---- FAQ Management ------------------------------------- */
+  function renderFAQs() {
+    const container = document.getElementById('admin-faq-list');
+    if (!container || !inventory) return;
+    const faqs = inventory.settings.faqs || [];
+    if (!faqs.length) {
+      container.innerHTML = '<p style="font-size:0.85rem;color:var(--text-muted);margin:0 0 0.75rem">No FAQs yet.</p>';
+      return;
+    }
+    container.innerHTML = faqs.map((f, i) => `
+      <div class="faq-admin-item" style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:0.75rem;margin-bottom:0.5rem">
+        <div style="font-size:0.85rem;font-weight:700;margin-bottom:0.25rem">${escHtml(f.q)}</div>
+        <div style="font-size:0.82rem;color:var(--text-muted);margin-bottom:0.5rem">${escHtml(f.a)}</div>
+        <button class="btn btn-xs btn-danger delete-faq-btn" data-index="${i}">Remove</button>
+      </div>`).join('');
+
+    container.querySelectorAll('.delete-faq-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        inventory.settings.faqs.splice(parseInt(btn.dataset.index), 1);
+        try {
+          await saveInventory(inventory);
+          renderFAQs();
+          showToast('FAQ removed', 'success');
+        } catch (ex) {
+          showToast(ex.message, 'error');
+        }
+      });
+    });
+  }
+
+  function bindFAQForm() {
+    const form = document.getElementById('faq-add-form');
+    if (!form) return;
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      const q = document.getElementById('faq-q').value.trim();
+      const a = document.getElementById('faq-a').value.trim();
+      if (!q || !a) return;
+      if (!inventory.settings.faqs) inventory.settings.faqs = [];
+      inventory.settings.faqs.push({ q, a });
+      try {
+        await saveInventory(inventory);
+        form.reset();
+        renderFAQs();
+        showToast('FAQ added', 'success');
+      } catch (ex) {
+        inventory.settings.faqs.pop();
+        showToast(ex.message, 'error');
+      }
+    });
   }
 
   /* ---- Categories for filter ------------------------------ */

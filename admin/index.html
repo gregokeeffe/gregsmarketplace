@@ -251,6 +251,29 @@
 
               <div class="settings-card" style="grid-column:1/-1">
                 <div class="settings-card-title">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  Site Content
+                </div>
+                <div class="settings-form">
+                  <div class="settings-field">
+                    <label class="settings-label" for="s-hero-title">Homepage Headline</label>
+                    <input type="text" class="settings-input" id="s-hero-title" placeholder="Skipping the fees and sharing the savings.">
+                    <span class="settings-hint">The big H1 on your homepage</span>
+                  </div>
+                  <div class="settings-field">
+                    <label class="settings-label" for="s-hero-subtitle">Homepage Subtitle</label>
+                    <textarea class="settings-input settings-textarea" id="s-hero-subtitle" rows="2" placeholder="A small collection of well-cared-for pieces…"></textarea>
+                  </div>
+                  <div class="settings-field">
+                    <label class="settings-label" for="s-about">About Me / Seller Bio</label>
+                    <textarea class="settings-input settings-textarea" id="s-about" rows="4" placeholder="Tell buyers a bit about yourself and why you're selling…"></textarea>
+                    <span class="settings-hint">Shown at the bottom of the homepage when filled in</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="settings-card" style="grid-column:1/-1">
+                <div class="settings-card-title">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                   Seller Away Mode
                 </div>
@@ -277,6 +300,32 @@
               </button>
             </div>
           </form>
+
+          <!-- FAQ Management (outside main form to avoid submit conflicts) -->
+          <div style="margin-top:1.5rem">
+            <div class="settings-card">
+              <div class="settings-card-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                FAQs
+              </div>
+              <div id="admin-faq-list"></div>
+              <form id="faq-add-form" style="margin-top:0.5rem">
+                <div class="settings-form">
+                  <div class="settings-field">
+                    <label class="settings-label" for="faq-q">Question</label>
+                    <input type="text" class="settings-input" id="faq-q" placeholder="What payment methods do you accept?" required>
+                  </div>
+                  <div class="settings-field">
+                    <label class="settings-label" for="faq-a">Answer</label>
+                    <textarea class="settings-input settings-textarea" id="faq-a" rows="2" placeholder="I accept PayPal…" required></textarea>
+                  </div>
+                  <div>
+                    <button type="submit" class="btn btn-primary btn-sm">+ Add FAQ</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
         </section>
 
       </div><!-- /.admin-content -->

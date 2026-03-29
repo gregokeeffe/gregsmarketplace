@@ -524,6 +524,68 @@ input, select, textarea { font-family: var(--font); }
 }
 
 /* --- Gallery ---------------------------------------------- */
+/* --- Featured card --------------------------------------- */
+.product-card.featured-card {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px var(--primary-light), var(--shadow-md);
+}
+.product-card.featured-card .card-category::before {
+  content: '⭐ ';
+}
+
+/* --- Logo avatar ----------------------------------------- */
+.logo-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2.5px solid rgba(255,255,255,0.65);
+  margin-left: 0.65rem;
+  flex-shrink: 0;
+  background: #1e3a8a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.logo-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0; left: 0;
+  border-radius: 50%;
+}
+.logo-avatar-fallback {
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  pointer-events: none;
+}
+.logo-avatar.initials-only .logo-avatar-img { display: none; }
+
+/* --- About / FAQ section ---------------------------------- */
+.about-section {
+  max-width: var(--max-width);
+  margin: 2rem auto 0;
+  padding: 0 1rem;
+}
+.about-inner {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem 2rem;
+}
+.about-text h2, .faq-section-public h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; }
+.about-text p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.65; }
+#faq-section-public { margin-top: 1.25rem; }
+.faq-list-public { display: flex; flex-direction: column; gap: 0.75rem; }
+.faq-public-item { background: var(--bg); border-radius: var(--radius); padding: 0.75rem 1rem; }
+.faq-public-q { font-weight: 700; font-size: 0.9rem; margin-bottom: 0.25rem; }
+.faq-public-a { font-size: 0.875rem; color: var(--text-muted); }
+
+/* --- Item gallery ---------------------------------------- */
 .item-gallery { display: flex; flex-direction: column; gap: 0.75rem; }
 
 .gallery-main {
@@ -565,6 +627,54 @@ input, select, textarea { font-family: var(--font); }
   padding: 0.25rem 0.5rem;
   border-radius: var(--radius-sm);
   pointer-events: none;
+}
+
+/* Portrait gallery layout */
+.item-gallery.portrait-layout {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  gap: 0.5rem;
+}
+.item-gallery.portrait-layout .gallery-main {
+  grid-column: 1;
+  grid-row: 1;
+  aspect-ratio: auto;
+  max-width: 320px;
+  width: auto;
+}
+.item-gallery.portrait-layout .gallery-main img {
+  object-fit: contain;
+  width: auto;
+  max-width: 100%;
+  max-height: 480px;
+}
+.item-gallery.portrait-layout .gallery-thumbs {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+.gallery-side-stack {
+  grid-column: 2;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.gallery-side-item {
+  flex: 1;
+  min-height: 80px;
+  overflow: hidden;
+  border-radius: var(--radius);
+  border: 2px solid var(--border);
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.gallery-side-item:hover { border-color: var(--primary); }
+.gallery-side-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .gallery-thumbs {
@@ -1012,6 +1122,9 @@ input, select, textarea { font-family: var(--font); }
 /* ============================================================
    RESPONSIVE
    ============================================================ */
+@media (max-width: 767px) {
+  .product-grid { grid-template-columns: 1fr !important; }
+}
 @media (max-width: 479px) {
   .header-search { display: none; }
   .hero { padding: 1.5rem 1rem; }
@@ -1021,9 +1134,6 @@ input, select, textarea { font-family: var(--font); }
   .card-price { font-size: 0.95rem; }
   .view-btn { padding: 0.35rem 0.6rem; font-size: 0.75rem; }
   .gallery-thumb { width: 52px; height: 52px; }
-}
-@media (min-width: 480px) and (max-width: 767px) {
-  .product-grid { grid-template-columns: repeat(2, 1fr); }
 }
 @media (min-width: 1024px) {
   .container { padding: 0 2rem; }

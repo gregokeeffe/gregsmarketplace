@@ -8,7 +8,6 @@
 
   let inventory = null;
   let activeCategory = 'All';
-  let searchQuery = '';
   let sortBy = 'default';
 
   /* --- Bootstrap ------------------------------------------- */
@@ -18,9 +17,43 @@
     renderSkeletons();
     inventory = await loadInventory();
     applyAwayBanner(inventory.settings);
+    applyHeroText(inventory.settings);
     renderCategories(inventory.items);
     renderListings();
+    renderAboutSection(inventory.settings);
     bindEvents();
+  }
+
+  function applyHeroText(settings) {
+    if (!settings) return;
+    const h1 = document.getElementById('hero-title');
+    const p = document.getElementById('hero-subtitle');
+    if (h1 && settings.heroTitle) h1.textContent = settings.heroTitle;
+    if (p && settings.heroSubtitle) p.textContent = settings.heroSubtitle;
+  }
+
+  function renderAboutSection(settings) {
+    if (!settings) return;
+    const section = document.getElementById('about-section');
+    if (!section) return;
+    let show = false;
+    const aboutEl = document.getElementById('about-text-public');
+    if (settings.about && aboutEl) {
+      aboutEl.innerHTML = `<div class="about-text"><h2>About</h2><p>${escHtml(settings.about)}</p></div>`;
+      show = true;
+    }
+    const faqSection = document.getElementById('faq-section-public');
+    const faqList = document.getElementById('faq-list-public');
+    if (settings.faqs && settings.faqs.length && faqList && faqSection) {
+      faqList.innerHTML = settings.faqs.map(f => `
+        <div class="faq-public-item">
+          <dt class="faq-public-q">${escHtml(f.q)}</dt>
+          <dd class="faq-public-a">${escHtml(f.a)}</dd>
+        </div>`).join('');
+      faqSection.removeAttribute('hidden');
+      show = true;
+    }
+    if (show) section.removeAttribute('hidden');
   }
 
   /* --- Data Loading ---------------------------------------- */
@@ -82,14 +115,6 @@
     if (activeCategory !== 'All') {
       items = items.filter(i => i.category === activeCategory);
     }
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      items = items.filter(i =>
-        i.title.toLowerCase().includes(q) ||
-        i.category.toLowerCase().includes(q) ||
-        (i.description && i.description.toLowerCase().includes(q))
-      );
-    }
     switch (sortBy) {
       case 'price-asc':
         items.sort((a, b) => a.price - b.price);
@@ -101,8 +126,11 @@
         items.sort((a, b) => a.title.localeCompare(b.title));
         break;
       default:
-        // Sold items last
-        items.sort((a, b) => (a.sold === b.sold ? 0 : a.sold ? 1 : -1));
+        // Featured first, then sold last
+        items.sort((a, b) => {
+          if (a.featured !== b.featured) return a.featured ? -1 : 1;
+          return a.sold === b.sold ? 0 : a.sold ? 1 : -1;
+        });
     }
     return items;
   }
@@ -119,9 +147,8 @@
     const items = getFilteredItems();
 
     if (infoEl) {
-      const total = activeCategory === 'All' ? inventory.items.length : inventory.items.filter(i => i.category === activeCategory).length;
       const available = items.filter(i => !i.sold).length;
-      infoEl.innerHTML = `Showing <strong>${items.length}</strong> listing${items.length !== 1 ? 's' : ''}${searchQuery ? ` for "<strong>${escHtml(searchQuery)}</strong>"` : ''} &mdash; <strong>${available}</strong> available`;
+      infoEl.innerHTML = `Showing <strong>${items.length}</strong> listing${items.length !== 1 ? 's' : ''} &mdash; <strong>${available}</strong> available`;
     }
 
     if (items.length === 0) {
@@ -158,7 +185,7 @@
     }
 
     return `
-      <article class="product-card${item.sold ? ' sold' : ''}" role="listitem">
+      <article class="product-card${item.sold ? ' sold' : ''}${item.featured ? ' featured-card' : ''}" role="listitem">
         <a href="/item.html?id=${encodeURIComponent(item.id)}" class="card-image-wrap" tabindex="-1" aria-hidden="true">
           <img src="${escAttr(photo)}" alt="${escAttr(item.title)}" loading="lazy" onerror="this.src='/images/placeholder.svg'">
           ${item.sold ? '<div class="sold-overlay"><span>Sold</span></div>' : ''}
@@ -174,7 +201,7 @@
             : `<span class="card-price">$${formatPrice(item.price)}</span>
                <a href="/item.html?id=${encodeURIComponent(item.id)}" class="view-btn">View</a>`
           }
-          ${crossRows.length ? `<div class="card-cross"><span class="card-cross-label">Cross-listed with:</span>${crossRows.join('')}</div>` : ''}
+          ${crossRows.length ? `<div class="card-cross"><span class="card-cross-label">Cross-listed:</span>${crossRows.join('')}</div>` : ''}
         </div>
       </article>`;
   }
@@ -205,27 +232,6 @@
         activeCategory = btn.dataset.cat;
         catList.querySelectorAll('.cat-btn').forEach(b => b.classList.toggle('active', b.dataset.cat === activeCategory));
         renderListings();
-      });
-    }
-
-    // Search
-    const searchForm = document.getElementById('search-form');
-    const searchInput = document.getElementById('search-input');
-    if (searchForm) {
-      searchForm.addEventListener('submit', e => {
-        e.preventDefault();
-        searchQuery = searchInput ? searchInput.value.trim() : '';
-        renderListings();
-      });
-    }
-    if (searchInput) {
-      let debounceTimer;
-      searchInput.addEventListener('input', () => {
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(() => {
-          searchQuery = searchInput.value.trim();
-          renderListings();
-        }, 300);
       });
     }
 
